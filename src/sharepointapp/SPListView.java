@@ -11,6 +11,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
+ * This class is used to present the lists associated with a SharePoint site.
  * @author allarj3
  *
  */
@@ -23,6 +24,7 @@ public class SPListView extends SPBaseView {
 	private static SPListView instance = new SPListView();
 
 	/**
+	 * Returns the static instance of this class.
 	 * @return
 	 */
 	public static SPListView getInstance() {
@@ -30,7 +32,7 @@ public class SPListView extends SPBaseView {
 	}
 
 	/**
-	 * 
+	 * Creates the new GUI to display the lists.
 	 */
 	private SPListView() {
 		SpringLayout layout = new SpringLayout();
@@ -49,15 +51,16 @@ public class SPListView extends SPBaseView {
 	}
 
 	/**
-	 * 
+	 * Used during the start of a site connection.
 	 */
 	public void configureConnectingViewStart() {
 		scroll.setViewportView(emptyList);
 	}
 
 	/**
-	 * @param allLists
-	 * @param listToLoad
+	 * Used to display all of the lists associated with a site.
+	 * @param allLists - the lists to display.
+	 * @param listToLoad - the list to select for a default, if null the first will be selected.
 	 */
 	public void displayLists(List<String> allLists, String listToLoad) {
 		lists = allLists;

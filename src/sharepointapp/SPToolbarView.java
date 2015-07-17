@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 
 /**
+ * This class is responsible for showing the toolbar buttons, messages, and url input.
  * @author allarj3
  *
  */
@@ -35,6 +36,7 @@ public class SPToolbarView extends SPBaseView {
 	protected boolean messageLock;
 
 	/**
+	 * Returns the static instance of this class.
 	 * @return
 	 */
 	public static SPToolbarView getInstance() {
@@ -42,7 +44,7 @@ public class SPToolbarView extends SPBaseView {
 	}
 
 	/**
-	 * 
+	 * Creates the toolbar view that can be added to the main frame.
 	 */
 	private SPToolbarView() {
 		SpringLayout layout = new SpringLayout();
@@ -235,8 +237,9 @@ public class SPToolbarView extends SPBaseView {
 	}
 
 	/**
-	 * @param size
-	 * @return
+	 * Gets Files/File based upon the count
+	 * @param size - how many files there are
+	 * @return "File" if size is 1, "Files" otherwise.
 	 */
 	protected String getFileString(int size) {
 		if (size != 1) {
@@ -247,7 +250,7 @@ public class SPToolbarView extends SPBaseView {
 	}
 
 	/**
-	 * 
+	 * Clears the messages associated with the view.
 	 */
 	public void clearMessageText() {
 		if (!messageLock) {
@@ -256,8 +259,9 @@ public class SPToolbarView extends SPBaseView {
 	}
 
 	/**
-	 * @param messageText
-	 * @param isSuccessful
+	 * Sets the message associated with this view.
+	 * @param messageText - the message to show.
+	 * @param isSuccessful - used to determine if the message was for a success or failure.
 	 */
 	public void setMessageText(String messageText, boolean isSuccessful) {
 		if (!messageLock) {
@@ -271,8 +275,9 @@ public class SPToolbarView extends SPBaseView {
 	}
 
 	/**
-	 * @param enable
-	 * @param listName
+	 * Enables/Disables the upload button
+	 * @param enable - whether to enable or disable the button
+	 * @param listName - the list name, used to determine if the upload button can be enabled
 	 */
 	public void enableUploadButton(boolean enable, String listName) {
 		if (webController.getDefaultUrlForList(listName) != null) {
@@ -283,14 +288,24 @@ public class SPToolbarView extends SPBaseView {
 	}
 
 	/**
-	 * @param willEnable
+	 * Enables/Disables the refresh button
+	 * @param willEnable - true to enable the button, false to disable
 	 */
 	public void enableRefreshButton(boolean willEnable) {
 		loadingImage.setEnabled(willEnable);
 	}
+	
+	/**
+	 * Enables/Disables the download button, based on if there are downloadable items.
+	 * @param areDownloadble
+	 */
+	public void enableDownloadButton(boolean areDownloadble) {
+		download.setEnabled(areDownloadble);
+	}
 
 	/**
-	 * @param url
+	 * Configures the view during initial site connection.
+	 * @param url - the url that is being connected
 	 */
 	public void configureConnectingViewStart(String url) {
 		enableRefreshButton(false);
@@ -303,6 +318,7 @@ public class SPToolbarView extends SPBaseView {
 	}
 
 	/**
+	 * The action when the connection is completed
 	 * @param listName
 	 */
 	public void finishedConnection(String listName) {
@@ -310,10 +326,5 @@ public class SPToolbarView extends SPBaseView {
 		enableRefreshButton(true);
 	}
 
-	/**
-	 * @param areDownloadble
-	 */
-	public void enableDownloadButton(boolean areDownloadble) {
-		download.setEnabled(areDownloadble);
-	}
+	
 }
