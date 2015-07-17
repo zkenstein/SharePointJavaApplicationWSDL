@@ -4,30 +4,34 @@ import java.awt.Color;
 import java.util.List;
 
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class SPListView extends JPanel {
+/**
+ * @author allarj3
+ *
+ */
+public class SPListView extends SPBaseView {
 	private static final long serialVersionUID = 8559762913706624106L;
-	private SharePointWebController spController = SharePointWebController.getInstance();
 	private List<String> lists;
 	private JScrollPane scroll;
 	private JList<String> emptyList = new JList<String>(new String[] { "No Lists Found" });
 
-	private List<Object> items = null;
-	private GetItemsThread currentItemsThread = null;
-	private String listName = "";
-
 	private static SPListView instance = new SPListView();
 
+	/**
+	 * @return
+	 */
 	public static SPListView getInstance() {
 		return instance;
 	}
 
+	/**
+	 * 
+	 */
 	private SPListView() {
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
@@ -44,41 +48,32 @@ public class SPListView extends JPanel {
 
 	}
 
-	private class GetItemsThread extends Thread {
-		@Override
-		public void run() {
-			try {
-				items = spController.getAllListItems(getListName());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if (SPItemView.getInstance().UpdateTable(items, getListName())) {
-				SPItemView.getInstance().displayLoading(false);
-				SPToolbarView.getInstance().enableUploadButton(true, getListName());
-			}
-			SPToolbarView.getInstance().enableUploadButton(true, getListName());
-			currentItemsThread = null;
-		}
+	/**
+	 * 
+	 */
+	public void configureConnectingViewStart() {
+		scroll.setViewportView(emptyList);
 	}
 
-	public void getLists(String listToLoad) {
-		SPToolbarView.getInstance().download.setEnabled(false);
-		SPItemView.getInstance().displayLoading(true);
-		scroll.setViewportView(emptyList);
-		lists = spController.getAllLists();
+	/**
+	 * @param allLists
+	 * @param listToLoad
+	 */
+	public void displayLists(List<String> allLists, String listToLoad) {
+		lists = allLists;
 		if (lists == null) {
-			SPToolbarView.getInstance().setMessageText("Unable to connect to server. Please make sure the URL is correct.",
-					false);
-			SPItemView.getInstance().setErrorMessage("No Items to Display.");
+			mainController.displayMessages("Unable to connect to server. Please make sure the URL is correct.",
+					"No Items to Display.", false);
 			return;
 		}
 		scroll.setVisible(true);
 		if (listToLoad == null) {
-			setListName(lists.get(0));
+			mainController.setCurrentList(lists.get(0));
 		} else {
-			setListName(listToLoad);
+			mainController.setCurrentList(listToLoad);
 		}
-		updateItems();
+
+		mainController.updateItems();
 
 		JList<String> listView = new JList<String>(lists.toArray(new String[lists.size()]));
 		listView.setSelectedValue(listToLoad, true);
@@ -89,12 +84,10 @@ public class SPListView extends JPanel {
 			public void valueChanged(ListSelectionEvent arg0) {
 				if (!arg0.getValueIsAdjusting()) {
 					try {
-						SPToolbarView.getInstance().clearMessageText();
-						SPItemView.getInstance().displayLoading(true);
-						SPToolbarView.getInstance().upload.setEnabled(false);
 						listView.setSelectedIndex(listView.getSelectedIndex());
-						setListName(listView.getSelectedValue());
-						updateItems();
+						mainController.setCurrentList(listView.getSelectedValue());
+
+						mainController.updateItems();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -103,22 +96,5 @@ public class SPListView extends JPanel {
 		});
 
 		scroll.setViewportView(listView);
-		SPToolbarView.getInstance().enableRefreshButton(true);
-	}
-
-	public void updateItems() {
-		if (currentItemsThread != null && currentItemsThread.isAlive()) {
-			currentItemsThread.interrupt();
-		}
-		currentItemsThread = new GetItemsThread();
-		currentItemsThread.start();
-	}
-
-	public String getListName() {
-		return listName;
-	}
-
-	public void setListName(String listName) {
-		this.listName = listName;
 	}
 }

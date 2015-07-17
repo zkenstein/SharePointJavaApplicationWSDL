@@ -42,6 +42,10 @@ import com.microsoft.schemas.sharepoint.soap.Lists;
 import com.microsoft.schemas.sharepoint.soap.ListsSoap;
 import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 
+/**
+ * @author allarj3
+ *
+ */
 public class SharePointWebController {
 
 	private static final String BASE_TYPE_ATTRIBUTE_NAME = "BaseType";
@@ -50,32 +54,41 @@ public class SharePointWebController {
 	private static final String LIST_ELEMENT_NAME = "List";
 	private ListsSoap listsoapstub;
 	private CopySoap copysoapstub;
-	static String kuser = "CORP\\allarj3"; // your account name
-	static String kpass = "Manch$404NH"; // your password for the account
-	// private static String BasesharepointUrl =
-	// "https://sharepointfoundation.sites.emc.com/EMCITSharePoint/InternTestSite";
-	private String BasesharepointUrl = "http://usitisusel3661c";
+	private String BasesharepointUrl = "";
 	private static SharePointWebController instance = new SharePointWebController();
-	SharePointAuthenticator authenticator;
+	private SharePointAuthenticator authenticator;
 	private Connector spConnectorThread;
 
 	private Map<String, String> defaultUrls = new HashMap<String, String>();
 	private boolean isConnected = false;;
 
+	/**
+	 * 
+	 */
 	private SharePointWebController() {
 
 		authenticator = new SharePointAuthenticator();
 		Authenticator.setDefault(authenticator);
 	}
 
+	/**
+	 * @return
+	 */
 	public String getBasesharepointUrl() {
 		return BasesharepointUrl;
 	}
 
+	/**
+	 * @return
+	 */
 	public static SharePointWebController getInstance() {
 		return instance;
 	}
 
+	/**
+	 * @author allarj3
+	 *
+	 */
 	private class Connector extends Thread {
 		private String listToLoad;
 
@@ -90,12 +103,17 @@ public class SharePointWebController {
 					BasesharepointUrl);
 			copysoapstub = getSPCopySoapStub(authenticator.getDomainAndUsername(), authenticator.getPassword(),
 					BasesharepointUrl);
-			SPListView.getInstance().getLists(listToLoad);
+			SharePointMainController.getInstance().finishedConnectingToSite(getAllLists(), listToLoad);
+			// SPListView.getInstance().getLists(listToLoad);
 			spConnectorThread = null;
 		}
 
 	}
 
+	/**
+	 * @param listName
+	 * @return
+	 */
 	public String getDefaultUrlForList(String listName) {
 		if (defaultUrls.containsKey(listName) && defaultUrls.get(listName).length() > 3) {
 			String defaultUrl = defaultUrls.get(listName);
@@ -114,10 +132,17 @@ public class SharePointWebController {
 		}
 	}
 
+	/**
+	 * @param url
+	 */
 	public void connectToUrl(String url) {
 		connectToUrl(url, null);
 	}
 
+	/**
+	 * @param url
+	 * @param listToLoad
+	 */
 	public void connectToUrl(String url, String listToLoad) {
 		if (url.endsWith("/")) {
 			url = url.substring(0, url.length() - 1);
@@ -131,6 +156,12 @@ public class SharePointWebController {
 		spConnectorThread.start();
 	}
 
+	/**
+	 * @param username
+	 * @param password
+	 * @param url
+	 * @return
+	 */
 	private CopySoap getSPCopySoapStub(String username, String password, String url) {
 
 		CopySoap port = null;
@@ -169,6 +200,12 @@ public class SharePointWebController {
 		return port;
 	}
 
+	/**
+	 * @param username
+	 * @param password
+	 * @param url
+	 * @return
+	 */
 	private ListsSoap getSPListSoapStub(String username, String password, String url) {
 		ListsSoap port = null;
 		if (username != null && password != null) {
@@ -206,6 +243,12 @@ public class SharePointWebController {
 		return port;
 	}
 
+	/**
+	 * @param filepath
+	 * @param testUrl
+	 * @return
+	 * @throws Exception
+	 */
 	public boolean downloadFile(String filepath, String testUrl) throws Exception {
 		testUrl = BasesharepointUrl + testUrl;
 		testUrl = testUrl.replace(" ", "%20");
@@ -228,6 +271,12 @@ public class SharePointWebController {
 		}
 	}
 
+	/**
+	 * @param filepath
+	 * @param testUrl
+	 * @return
+	 * @throws Exception
+	 */
 	public boolean uploadFile(String filepath, String testUrl) throws Exception {
 		testUrl = BasesharepointUrl + testUrl;
 		testUrl = testUrl.replace(" ", "%20");
@@ -253,10 +302,16 @@ public class SharePointWebController {
 		}
 	}
 
+	/**
+	 * @return
+	 */
 	public boolean isConnected() {
 		return isConnected;
 	}
 
+	/**
+	 * @return
+	 */
 	public List<String> getAllLists() {
 		try {
 			defaultUrls.clear();
@@ -271,6 +326,11 @@ public class SharePointWebController {
 		}
 	}
 
+	/**
+	 * @param listName
+	 * @return
+	 * @throws Exception
+	 */
 	public List<Object> getAllListItems(String listName) throws Exception {
 		String rowLimit = "150";
 
@@ -289,6 +349,12 @@ public class SharePointWebController {
 
 	}
 
+	/**
+	 * @param contents
+	 * @param printXML
+	 * @return
+	 * @throws Exception
+	 */
 	private List<String> getListsFromContents(List<Object> contents, boolean printXML) throws Exception {
 
 		List<String> valuesToReturn = new ArrayList<String>();
@@ -305,6 +371,12 @@ public class SharePointWebController {
 		return valuesToReturn;
 	}
 
+	/**
+	 * @param element
+	 * @throws TransformerFactoryConfigurationError
+	 * @throws TransformerConfigurationException
+	 * @throws TransformerException
+	 */
 	private void printElementXML(Element element)
 			throws TransformerFactoryConfigurationError, TransformerConfigurationException, TransformerException {
 		TransformerFactory tf = TransformerFactory.newInstance();
@@ -316,6 +388,10 @@ public class SharePointWebController {
 		System.out.println(output);
 	}
 
+	/**
+	 * @param valuesToReturn
+	 * @param element
+	 */
 	private void findMatchingElements(List<String> valuesToReturn, Node element) {
 		NodeList children = element.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
@@ -336,6 +412,10 @@ public class SharePointWebController {
 		}
 	}
 
+	/**
+	 * @param contents
+	 * @return
+	 */
 	public String[] getAttributeNames(List<Object> contents) {
 		String[] names = null;
 		for (Object o : contents) {
@@ -357,6 +437,11 @@ public class SharePointWebController {
 		return names;
 	}
 
+	/**
+	 * @param contents
+	 * @param columnNames
+	 * @return
+	 */
 	public Object[][] getData(List<Object> contents, String[] columnNames) {
 		Object[][] data = null;
 		List<String> columns = Arrays.asList(columnNames);
@@ -382,6 +467,10 @@ public class SharePointWebController {
 		return data;
 	}
 
+	/**
+	 * @param string
+	 * @return
+	 */
 	public URL convertToURLEscapingIllegalCharacters(String string) {
 		try {
 			String decodedURL = URLDecoder.decode(string, "UTF-8");

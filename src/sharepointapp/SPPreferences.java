@@ -13,17 +13,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author allarj3
+ *
+ */
 public class SPPreferences {
 	private static final String VALUE_SEPARATOR = "---";
 	private static final String KEY_SEPARATOR = ";#";
-	Map<String, ArrayList<String>> prefsMap = new HashMap<String, ArrayList<String>>();
-	File prefsFile = new File("SPJavaPrefs.txt");
+	private Map<String, ArrayList<String>> prefsMap = new HashMap<String, ArrayList<String>>();
+	private File prefsFile = new File("SPJavaPrefs.txt");
 	static SPPreferences instance = new SPPreferences();
 
+	/**
+	 * @return
+	 */
 	public static SPPreferences GetPreferences() {
 		return instance;
 	}
-
+	
+	/**
+	 * 
+	 */
 	private SPPreferences() {
 		try {
 			if(!prefsFile.exists()){
@@ -37,6 +47,9 @@ public class SPPreferences {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private void readPrefsFile() {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(prefsFile));
@@ -50,6 +63,9 @@ public class SPPreferences {
 		}
 	}
 
+	/**
+	 * @param line
+	 */
 	private void processLine(String line) {
 		String[] args = line.split(KEY_SEPARATOR);
 		if(args.length == 2){
@@ -59,6 +75,11 @@ public class SPPreferences {
 		}
 	}
 
+	/**
+	 * @param key
+	 * @param defaultReturn
+	 * @return
+	 */
 	public String getFirstOrDefault(String key, String defaultReturn) {
 		if(prefsMap.containsKey(key) && !prefsMap.get(key).isEmpty()){
 			return prefsMap.get(key).get(0);
@@ -66,6 +87,10 @@ public class SPPreferences {
 		return defaultReturn;
 	}
 	
+	/**
+	 * @param key
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	public List<String> getAll(String key) {
 		if(prefsMap.containsKey(key)){
@@ -74,11 +99,20 @@ public class SPPreferences {
 		return new ArrayList<String>();
 	}
 
+	/**
+	 * @param key
+	 * @param value
+	 */
 	public void put(String key, String value) {
 		prefsMap.put(key, new ArrayList<String>());
 		prefsMap.get(key).add(value);
 	}
 	
+	/**
+	 * @param key
+	 * @param value
+	 * @return
+	 */
 	public boolean add(String key, String value) {
 		if(prefsMap.containsKey(key) && !prefsMap.get(key).contains(value)){
 			prefsMap.get(key).add(value);
@@ -91,15 +125,26 @@ public class SPPreferences {
 		return false;
 	}
 	
+	/**
+	 * @param key
+	 * @param values
+	 */
 	public void put(String key, List<String> values) {
 		
 		prefsMap.put(key, new ArrayList<>(values));
 	}
 	
+	/**
+	 * @param key
+	 * @return
+	 */
 	public boolean keyExists(String key){
 		return prefsMap.containsKey(key);
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings("resource")
 	public void flush() {
 		try {
@@ -119,7 +164,7 @@ public class SPPreferences {
 				}
 				outLine += "\n";
 				writer.write(outLine);
-			};
+			}
 			writer.flush();
 			writer.close();
 		} catch (Exception e) {

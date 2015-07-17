@@ -8,30 +8,40 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class SPItemView extends JPanel {
-	
+/**
+ * This class is used to show all of the items associated with a particular list/library.
+ * @author allarj3
+ *
+ */
+public class SPItemView extends SPBaseView {
+
 	private static final long serialVersionUID = 9001415591452156169L;
 
 	private static SPItemView instance = new SPItemView();
 
-	JScrollPane scroll = new JScrollPane();
-	JLabel loadingImage;
-	JLabel errorLabel = new JLabel("Connect to a site using the address bar above.");
-	String currentList = "";
+	private JScrollPane scroll = new JScrollPane();
+	private JLabel loadingImage;
+	private JLabel errorLabel = new JLabel("Connect to a site using the address bar above.");
 
+	private JTable table;
+
+	/**
+	 * This returns the itemView's static instance
+	 * @return
+	 */
 	public static SPItemView getInstance() {
 		return instance;
 	}
 
-	JTable table;
-
+	/**
+	 * Creates a new item view using a SpringLayout
+	 */
 	private SPItemView() {
 
 		this.add(scroll);
@@ -43,11 +53,10 @@ public class SPItemView extends JPanel {
 		setLayout(layout);
 
 		URL url = getClass().getResource("/715.GIF");
-		if(url != null){
-		ImageIcon imageIcon = new ImageIcon(url);
-		loadingImage = new JLabel(imageIcon);
-		}
-		else{
+		if (url != null) {
+			ImageIcon imageIcon = new ImageIcon(url);
+			loadingImage = new JLabel(imageIcon);
+		} else {
 			loadingImage = new JLabel();
 		}
 		this.add(loadingImage);
@@ -70,25 +79,33 @@ public class SPItemView extends JPanel {
 		layout.putConstraint(SpringLayout.EAST, errorLabel, 0, SpringLayout.EAST, this);
 		layout.putConstraint(SpringLayout.SOUTH, errorLabel, 0, SpringLayout.SOUTH, this);
 
-		
 	}
 
+	/**
+	 * Gets the list of item paths currently selected
+	 * @return the list of string paths
+	 */
 	public List<String> getCurrentItemPaths() {
 		List<String> paths = new ArrayList<String>();
 		for (int i : table.getSelectedRows()) {
-			String path = displayRowValues(i);
-			if (path != "" && !path.endsWith(".000")) {
+			String path = getPathFromRow(i);
+			if (path.length() != 0 && !path.endsWith(".000")) {
 				paths.add(path);
 			}
 		}
 		return paths;
 	}
 
-	private String displayRowValues(int rowIndex) {
+	/**
+	 * Gets the path string from a certain row
+	 * @param rowIndex - the row to ascertain the path from
+	 * @return the path as a string
+	 */
+	private String getPathFromRow(int rowIndex) {
 		int columns = table.getColumnCount();
 		String s = "";
 
-		String[] siteUrlParts = SharePointWebController.getInstance().getBasesharepointUrl().split("/");
+		String[] siteUrlParts = webController.getBasesharepointUrl().split("/");
 		String currentSiteName = siteUrlParts[siteUrlParts.length - 1];
 		for (int col = 0; col < columns; col++) {
 			Object o = table.getValueAt(rowIndex, col);
@@ -102,22 +119,27 @@ public class SPItemView extends JPanel {
 		return s;
 	}
 
+	/**
+	 * This used to update the item display with new items.
+	 * @param items - the new items to display.
+	 * @param listName - the list of the current items.
+	 * @return true if the operation was successful.
+	 */
 	public boolean UpdateTable(List<Object> items, String listName) {
-		SPToolbarView.getInstance().download.setEnabled(false);
-		currentList = listName;
+		mainController.setFilesDownloadable(false);
 		boolean returnResult = true;
 		String[] columnNames = null;
 		if (items != null) {
-			columnNames = SharePointWebController.getInstance().getAttributeNames(items);
+			columnNames = webController.getAttributeNames(items);
 		}
 		Object[][] data = null;
 		if (columnNames != null) {
-			data = SharePointWebController.getInstance().getData(items, columnNames);
+			data = webController.getData(items, columnNames);
 		}
 
 		if (data != null && columnNames != null) {
 			table = new JTable(data, columnNames) {
-				
+
 				private static final long serialVersionUID = -4122451180044627689L;
 
 				@Override
@@ -137,9 +159,11 @@ public class SPItemView extends JPanel {
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
 					if (!e.getValueIsAdjusting()) {
-						SPToolbarView.getInstance().clearMessageText();
+						mainController.clearMessages();
 						if (getCurrentItemPaths().size() > 0) {
-							SPToolbarView.getInstance().download.setEnabled(true);
+							mainController.setFilesDownloadable(true);
+						} else {
+							mainController.setFilesDownloadable(false);
 						}
 					}
 				}
@@ -155,6 +179,10 @@ public class SPItemView extends JPanel {
 		return returnResult;
 	}
 
+	/**
+	 * Sets the error message for the display
+	 * @param message the message to show
+	 */
 	public void setErrorMessage(String message) {
 		System.out.println("Displaying error message: " + message);
 		scroll.setVisible(false);
@@ -164,10 +192,35 @@ public class SPItemView extends JPanel {
 		errorLabel.setHorizontalAlignment(JLabel.CENTER);
 	}
 
-	public void displayLoading(boolean willDisplay) {
+	/**
+	 * This is used to display the loading gif during operations by the web controller.
+	 * @param willDisplay - true to show the loading gif, false to hide it.
+	 */
+	private void displayLoading(boolean willDisplay) {
 		scroll.setVisible(!willDisplay);
 		loadingImage.setVisible(willDisplay);
 		errorLabel.setVisible(false);
 		this.revalidate();
+	}
+
+	/**
+	 * Is the action associated with starting to connect to a site.
+	 */
+	public void configureConnectingViewStart() {
+		displayLoading(true);
+	}
+
+	/**
+	 * Is the action associated with starting to load a new list's items.
+	 */
+	public void startedLoadingItems() {
+		displayLoading(true);
+	}
+
+	/**
+	 * Is the action associated with list items being done loading.
+	 */
+	public void finishedLoadingItems() {
+		displayLoading(false);
 	}
 }

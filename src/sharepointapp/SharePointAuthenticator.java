@@ -25,6 +25,10 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 
+/**
+ * @author allarj3
+ *
+ */
 public class SharePointAuthenticator extends Authenticator {
 
 	private static final String DOMAIN_KEY = "DOMAIN";
@@ -62,6 +66,7 @@ public class SharePointAuthenticator extends Authenticator {
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 			HttpsURLConnection.setDefaultHostnameVerifier(hv);
 		} catch (Exception localException) {
+			localException.printStackTrace();
 		}
 	}
 
@@ -73,6 +78,10 @@ public class SharePointAuthenticator extends Authenticator {
 	private final Object waiter = new Object();
 	private JFrame frame;
 
+	/**
+	 * @author allarj3
+	 *
+	 */
 	private class AuthenticationDisplay extends Thread {
 
 		@Override
@@ -83,7 +92,7 @@ public class SharePointAuthenticator extends Authenticator {
 			SpringLayout paneLayout = new SpringLayout();
 			pane.setLayout(paneLayout);
 			JPanel formPanel = new JPanel();
-			Main.frame.setEnabled(false);
+			MainView.frame.setEnabled(false);
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			frame.setSize(400, 200);
 			domain = prefs.getFirstOrDefault(DOMAIN_KEY, "");
@@ -138,7 +147,7 @@ public class SharePointAuthenticator extends Authenticator {
 			paneLayout.putConstraint(SpringLayout.NORTH, submitBtn, 5, SpringLayout.SOUTH, formPanel);
 			paneLayout.putConstraint(SpringLayout.EAST, submitBtn, -5, SpringLayout.EAST, pane);
 			paneLayout.putConstraint(SpringLayout.SOUTH, submitBtn, -5, SpringLayout.SOUTH, pane);
-			
+
 			frame.setVisible(true);
 			frame.addWindowListener(new WindowListener() {
 
@@ -185,10 +194,16 @@ public class SharePointAuthenticator extends Authenticator {
 
 	}
 
+	/**
+	 * 
+	 */
 	public SharePointAuthenticator() {
 		super();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.net.Authenticator#getPasswordAuthentication()
+	 */
 	@Override
 	public PasswordAuthentication getPasswordAuthentication() {
 
@@ -200,10 +215,10 @@ public class SharePointAuthenticator extends Authenticator {
 				waiter.wait();
 			}
 
-			Main.frame.setEnabled(true);
-			Main.frame.requestFocus();
-			Main.frame.revalidate();
-			Main.frame.repaint();
+			MainView.frame.setEnabled(true);
+			MainView.frame.requestFocus();
+			MainView.frame.revalidate();
+			MainView.frame.repaint();
 			if (!exited) {
 				return (new PasswordAuthentication(getDomainAndUsername(), password.toCharArray()));
 			} else {
@@ -212,15 +227,21 @@ public class SharePointAuthenticator extends Authenticator {
 		} catch (Exception e) {
 			System.out.println("Error: " + e.getMessage());
 			e.printStackTrace();
-			Main.frame.setEnabled(true);
+			MainView.frame.setEnabled(true);
 			return (new PasswordAuthentication("", new char[] {}));
 		}
 	}
 
+	/**
+	 * @return
+	 */
 	public String getPassword() {
 		return password;
 	}
 
+	/**
+	 * @return
+	 */
 	public String getDomainAndUsername() {
 		String domainBars = "";
 		if (!domain.isEmpty()) {

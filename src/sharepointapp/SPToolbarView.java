@@ -14,26 +14,36 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
-public class SPToolbarView extends JPanel {
+/**
+ * @author allarj3
+ *
+ */
+public class SPToolbarView extends SPBaseView {
 	private static final long serialVersionUID = -7024445311746875546L;
 	private static final String DEFAULT_DOWNLOAD_LOCATION = ".";
 	private static SPToolbarView instance = new SPToolbarView();
 	private static final String URL_LIST_KEY = "URLS";
 	private static final String DOWNLOAD_LOCATION_KEY = "DOWNLOAD_LOCATION";
 	private SPPreferences prefs = SPPreferences.GetPreferences();
-	JButton download;
-	JButton upload;
-	JLabel message;
-	JButton loadingImage;
+	private JButton download;
+	private JButton upload;
+	private JLabel message;
+	private JButton loadingImage;
+	private JComboBox<String> urlSelection;
 	protected boolean messageLock;
 
+	/**
+	 * @return
+	 */
 	public static SPToolbarView getInstance() {
 		return instance;
 	}
 
+	/**
+	 * 
+	 */
 	private SPToolbarView() {
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
@@ -53,7 +63,7 @@ public class SPToolbarView extends JPanel {
 		prefs.add(URL_LIST_KEY, "New URL");
 		List<String> urls = prefs.getAll(URL_LIST_KEY);
 		String[] urlArray = urls.toArray(new String[urls.size()]);
-		JComboBox<String> urlSelection = new JComboBox<String>(urlArray);
+		urlSelection = new JComboBox<String>(urlArray);
 		urlSelection.setEnabled(true);
 		urlSelection.setEditable(true);
 		this.add(urlSelection);
@@ -67,21 +77,20 @@ public class SPToolbarView extends JPanel {
 		this.add(upload);
 		this.add(message);
 		message.setHorizontalAlignment(JLabel.CENTER);
-		
+
 		URL url = getClass().getResource("/refresh.png");
 		URL url2 = getClass().getResource("/refreshHover.png");
-		if(url != null && url2 != null){
+		if (url != null && url2 != null) {
 			ImageIcon imageIcon = new ImageIcon(url);
 			loadingImage = new JButton(imageIcon);
 			loadingImage.setBorderPainted(false);
 			loadingImage.setBorder(null);
-			//button.setFocusable(false);
+			// button.setFocusable(false);
 			loadingImage.setMargin(new Insets(0, 0, 0, 0));
 			loadingImage.setContentAreaFilled(false);
 			loadingImage.setRolloverIcon(new ImageIcon(url2));
 
-		}
-		else{
+		} else {
 			loadingImage = new JButton("Refresh");
 		}
 		this.add(loadingImage);
@@ -91,7 +100,7 @@ public class SPToolbarView extends JPanel {
 		layout.putConstraint(SpringLayout.NORTH, urlSelection, 5, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.EAST, urlSelection, -5, SpringLayout.EAST, this);
 		layout.putConstraint(SpringLayout.SOUTH, urlSelection, 37, SpringLayout.NORTH, this);
-		
+
 		layout.putConstraint(SpringLayout.WEST, loadingImage, 5, SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, loadingImage, 5, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.EAST, loadingImage, 37, SpringLayout.WEST, this);
@@ -118,14 +127,7 @@ public class SPToolbarView extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (last.compareTo((String) urlSelection.getSelectedItem()) != 0) {
-					enableRefreshButton(false);
-					upload.setEnabled(false);
-					clearMessageText();
-					if (prefs.add(URL_LIST_KEY, (String) urlSelection.getSelectedItem())) {
-						urlSelection.addItem((String) urlSelection.getSelectedItem());
-						prefs.flush();
-					}
-					SharePointWebController.getInstance().connectToUrl((String) urlSelection.getSelectedItem());
+					mainController.connectToSite((String) urlSelection.getSelectedItem());
 				}
 				last = (String) urlSelection.getSelectedItem();
 			}
@@ -137,7 +139,7 @@ public class SPToolbarView extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				clearMessageText();
 
-				int returnVal = downloadFolderChooser.showOpenDialog(Main.frame);
+				int returnVal = downloadFolderChooser.showOpenDialog(MainView.frame);
 
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File downloadFolder = downloadFolderChooser.getSelectedFile();
@@ -152,7 +154,7 @@ public class SPToolbarView extends JPanel {
 					} catch (IOException e2) {
 						e2.printStackTrace();
 					}
-					List<String> paths = SPItemView.getInstance().getCurrentItemPaths();
+					List<String> paths = mainController.getCurrentItemPaths();
 					message.setText("Downloading " + paths.size() + " " + getFileString(paths.size()) + "...");
 					messageLock = true;
 
@@ -166,7 +168,7 @@ public class SPToolbarView extends JPanel {
 								try {
 									String downloadFilePath = downloadFolderFinal.getCanonicalPath() + "\\"
 											+ pathParts[pathParts.length - 1];
-									if (SharePointWebController.getInstance().downloadFile(downloadFilePath, path)) {
+									if (webController.downloadFile(downloadFilePath, path)) {
 										count++;
 									}
 								} catch (Exception e1) {
@@ -174,7 +176,8 @@ public class SPToolbarView extends JPanel {
 								}
 							}
 							messageLock = false;
-							setMessageText(getFileString(paths.size()) + " Downloaded: " + count + " / " + paths.size(), count == paths.size());
+							setMessageText(getFileString(paths.size()) + " Downloaded: " + count + " / " + paths.size(),
+									count == paths.size());
 						};
 
 					}).start();
@@ -187,22 +190,22 @@ public class SPToolbarView extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				clearMessageText();
-				int returnVal = fileUploadChooser.showOpenDialog(Main.frame);
+				int returnVal = fileUploadChooser.showOpenDialog(MainView.frame);
 
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					final String listName = SPListView.getInstance().getListName();
+					final String listName = mainController.getCurrentList();
 					final File[] files = fileUploadChooser.getSelectedFiles();
 					message.setText("Uploading " + files.length + " " + getFileString(files.length) + "...");
 					messageLock = true;
-					
-					(new Thread(){
+
+					(new Thread() {
 						public void run() {
 							int count = 0;
 							for (File file : files) {
 								try {
-									String listPath = SharePointWebController.getInstance().getDefaultUrlForList(listName);
-									if (listPath != null && SharePointWebController.getInstance()
-											.uploadFile(file.getAbsolutePath(), listPath + "/" + file.getName())) {
+									String listPath = webController.getDefaultUrlForList(listName);
+									if (listPath != null && webController.uploadFile(file.getAbsolutePath(),
+											listPath + "/" + file.getName())) {
 										count++;
 									}
 
@@ -210,39 +213,52 @@ public class SPToolbarView extends JPanel {
 									e1.printStackTrace();
 								}
 							}
-							SPListView.getInstance().updateItems();
+							mainController.setCurrentList(listName);
+							mainController.updateItems();
 							messageLock = false;
-							setMessageText(getFileString(files.length) + " Uploaded: " + count + " / " + files.length, count == files.length);};
+							setMessageText(getFileString(files.length) + " Uploaded: " + count + " / " + files.length,
+									count == files.length);
+						};
 					}).start();
 				}
 			}
 		});
-		
+
 		loadingImage.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String currentList = SPListView.getInstance().getListName();
-				SharePointWebController.getInstance().connectToUrl((String) urlSelection.getSelectedItem(), currentList);
+				String currentList = mainController.getCurrentList();
+				webController.connectToUrl((String) urlSelection.getSelectedItem(), currentList);
 			}
 		});
 	}
 
+	/**
+	 * @param size
+	 * @return
+	 */
 	protected String getFileString(int size) {
-		if(size != 1){
+		if (size != 1) {
 			return "Files";
-		}
-		else{
+		} else {
 			return "File";
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public void clearMessageText() {
 		if (!messageLock) {
 			setMessageText("", true);
 		}
 	}
 
+	/**
+	 * @param messageText
+	 * @param isSuccessful
+	 */
 	public void setMessageText(String messageText, boolean isSuccessful) {
 		if (!messageLock) {
 			message.setText(messageText);
@@ -254,15 +270,50 @@ public class SPToolbarView extends JPanel {
 		}
 	}
 
+	/**
+	 * @param enable
+	 * @param listName
+	 */
 	public void enableUploadButton(boolean enable, String listName) {
-		if (SharePointWebController.getInstance().getDefaultUrlForList(listName) != null) {
+		if (webController.getDefaultUrlForList(listName) != null) {
 			upload.setEnabled(enable);
 		} else {
 			upload.setEnabled(false);
 		}
 	}
-	
+
+	/**
+	 * @param willEnable
+	 */
 	public void enableRefreshButton(boolean willEnable) {
 		loadingImage.setEnabled(willEnable);
+	}
+
+	/**
+	 * @param url
+	 */
+	public void configureConnectingViewStart(String url) {
+		enableRefreshButton(false);
+		upload.setEnabled(false);
+		clearMessageText();
+		if (prefs.add(URL_LIST_KEY, url)) {
+			urlSelection.addItem(url);
+			prefs.flush();
+		}
+	}
+
+	/**
+	 * @param listName
+	 */
+	public void finishedConnection(String listName) {
+		enableUploadButton(true, listName);
+		enableRefreshButton(true);
+	}
+
+	/**
+	 * @param areDownloadble
+	 */
+	public void enableDownloadButton(boolean areDownloadble) {
+		download.setEnabled(areDownloadble);
 	}
 }
