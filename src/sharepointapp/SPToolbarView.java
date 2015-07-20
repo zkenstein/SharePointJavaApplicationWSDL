@@ -9,12 +9,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
+import javax.swing.event.ListDataListener;
 
 /**
  * This class is responsible for showing the toolbar buttons, messages, and url input.
@@ -22,16 +24,19 @@ import javax.swing.SpringLayout;
  *
  */
 public class SPToolbarView extends SPBaseView {
+	private static final int BUTTON_SIZE = 140;
 	private static final long serialVersionUID = -7024445311746875546L;
 	private static final String DEFAULT_DOWNLOAD_LOCATION = ".";
 	private static SPToolbarView instance = new SPToolbarView();
 	private static final String URL_LIST_KEY = "URLS";
 	private static final String DOWNLOAD_LOCATION_KEY = "DOWNLOAD_LOCATION";
 	private SPPreferences prefs = SPPreferences.GetPreferences();
+	private ComboBoxModel<String> defaultModel;
 	private JButton download;
 	private JButton upload;
 	private JLabel message;
 	private JButton refreshButton;
+	private JButton preferencesButton;
 	private JComboBox<String> urlSelection;
 	protected boolean messageLock;
 
@@ -47,6 +52,7 @@ public class SPToolbarView extends SPBaseView {
 	 * Creates the toolbar view that can be added to the main frame.
 	 */
 	private SPToolbarView() {
+		prefs.registerSingleValueOnlyKey(DOWNLOAD_LOCATION_KEY);
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 
@@ -69,6 +75,7 @@ public class SPToolbarView extends SPBaseView {
 		urlSelection.setEnabled(true);
 		urlSelection.setEditable(true);
 		this.add(urlSelection);
+		defaultModel = urlSelection.getModel();
 
 		download = new JButton("Download File(s)");
 		download.setEnabled(false);
@@ -97,6 +104,9 @@ public class SPToolbarView extends SPBaseView {
 		}
 		this.add(refreshButton);
 		refreshButton.setEnabled(false);
+		
+		preferencesButton = new JButton("Preferences");
+		this.add(preferencesButton);
 
 		layout.putConstraint(SpringLayout.WEST, urlSelection, 5, SpringLayout.EAST, refreshButton);
 		layout.putConstraint(SpringLayout.NORTH, urlSelection, 5, SpringLayout.NORTH, this);
@@ -108,12 +118,17 @@ public class SPToolbarView extends SPBaseView {
 		layout.putConstraint(SpringLayout.EAST, refreshButton, 37, SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.SOUTH, refreshButton, 37, SpringLayout.NORTH, this);
 
-		layout.putConstraint(SpringLayout.WEST, download, -155, SpringLayout.EAST, this);
+		layout.putConstraint(SpringLayout.WEST, preferencesButton, -BUTTON_SIZE - 5, SpringLayout.EAST, this);
+		layout.putConstraint(SpringLayout.NORTH, preferencesButton, 5, SpringLayout.SOUTH, urlSelection);
+		layout.putConstraint(SpringLayout.EAST, preferencesButton, 0, SpringLayout.EAST, urlSelection);
+		layout.putConstraint(SpringLayout.SOUTH, preferencesButton, -5, SpringLayout.SOUTH, this);
+
+		layout.putConstraint(SpringLayout.WEST, download, -BUTTON_SIZE - 5, SpringLayout.WEST, preferencesButton);
 		layout.putConstraint(SpringLayout.NORTH, download, 5, SpringLayout.SOUTH, urlSelection);
-		layout.putConstraint(SpringLayout.EAST, download, 0, SpringLayout.EAST, urlSelection);
+		layout.putConstraint(SpringLayout.EAST, download, -5, SpringLayout.WEST, preferencesButton);
 		layout.putConstraint(SpringLayout.SOUTH, download, -5, SpringLayout.SOUTH, this);
 
-		layout.putConstraint(SpringLayout.WEST, upload, -155, SpringLayout.WEST, download);
+		layout.putConstraint(SpringLayout.WEST, upload, -BUTTON_SIZE - 5, SpringLayout.WEST, download);
 		layout.putConstraint(SpringLayout.NORTH, upload, 5, SpringLayout.SOUTH, urlSelection);
 		layout.putConstraint(SpringLayout.EAST, upload, -5, SpringLayout.WEST, download);
 		layout.putConstraint(SpringLayout.SOUTH, upload, -5, SpringLayout.SOUTH, this);
@@ -130,6 +145,8 @@ public class SPToolbarView extends SPBaseView {
 		upload.addActionListener(new UploadButtonActionListener(fileUploadChooser));
 
 		refreshButton.addActionListener(new RefreshButtonActionListener());
+		
+		preferencesButton.addActionListener(new SPPreferencesView.SPPreferencesActionListener(null));
 	}
 	
 	
@@ -364,7 +381,7 @@ public class SPToolbarView extends SPBaseView {
 		upload.setEnabled(false);
 		clearMessageText();
 		if (prefs.add(URL_LIST_KEY, url)) {
-			urlSelection.addItem(url);
+			//urlSelection.addItem(url);
 			prefs.flush();
 		}
 	}

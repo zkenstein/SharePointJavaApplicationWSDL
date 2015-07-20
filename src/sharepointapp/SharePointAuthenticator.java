@@ -201,6 +201,8 @@ public class SharePointAuthenticator extends Authenticator {
 	 */
 	public SharePointAuthenticator() {
 		super();
+		prefs.registerSingleValueOnlyKey(DOMAIN_KEY);
+		prefs.registerSingleValueOnlyKey(USERNAME_KEY);
 	}
 
 	/* (non-Javadoc)
