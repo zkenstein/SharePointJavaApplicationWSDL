@@ -44,6 +44,7 @@ import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 
 /**
  * This class is used to connect to a SharePoint site and for reading its data.
+ * 
  * @author allarj3
  *
  */
@@ -65,12 +66,13 @@ public class SharePointWebController {
 
 	/**
 	 * Get the static instance of this class.
+	 * 
 	 * @return the instance of the class.
 	 */
 	public static SharePointWebController getInstance() {
 		return instance;
 	}
-	
+
 	/**
 	 * Creates the controller
 	 */
@@ -82,6 +84,7 @@ public class SharePointWebController {
 
 	/**
 	 * Returns the URL associated with the current site.
+	 * 
 	 * @return the URL as a string
 	 */
 	public String getBasesharepointUrl() {
@@ -90,6 +93,7 @@ public class SharePointWebController {
 
 	/**
 	 * This class is responsible for loading the site.
+	 * 
 	 * @author allarj3
 	 *
 	 */
@@ -98,13 +102,17 @@ public class SharePointWebController {
 
 		/**
 		 * Creates the new connector
-		 * @param listToLoad - the list's items to load by default
+		 * 
+		 * @param listToLoad
+		 *            - the list's items to load by default
 		 */
 		public Connector(String listToLoad) {
 			this.listToLoad = listToLoad;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see java.lang.Thread#run()
 		 */
 		@Override
@@ -122,7 +130,9 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * Returns the default url for a specific list - is used for uploading and downloading files
+	 * Returns the default url for a specific list - is used for uploading and
+	 * downloading files
+	 * 
 	 * @param listName
 	 * @return
 	 */
@@ -146,16 +156,22 @@ public class SharePointWebController {
 
 	/**
 	 * This is used for connecting to a specific site by URL.
-	 * @param url - the url of the site to connect to.
+	 * 
+	 * @param url
+	 *            - the url of the site to connect to.
 	 */
 	public void connectToUrl(String url) {
 		connectToUrl(url, null);
 	}
 
 	/**
-	 * This is used for connecting to a specific site by URL with a list to load by default afterward.
-	 * @param url - the url of the site to connect to.
-	 * @param listToLoad - the default list name to load
+	 * This is used for connecting to a specific site by URL with a list to load
+	 * by default afterward.
+	 * 
+	 * @param url
+	 *            - the url of the site to connect to.
+	 * @param listToLoad
+	 *            - the default list name to load
 	 */
 	public void connectToUrl(String url, String listToLoad) {
 		if (url.endsWith("/")) {
@@ -172,9 +188,13 @@ public class SharePointWebController {
 
 	/**
 	 * Gets the object needed for the Copy Web Service operations
-	 * @param username - the current user's username
-	 * @param password - the current user's password
-	 * @param url - the site url.
+	 * 
+	 * @param username
+	 *            - the current user's username
+	 * @param password
+	 *            - the current user's password
+	 * @param url
+	 *            - the site url.
 	 * @return the copy object.
 	 */
 	private CopySoap getSPCopySoapStub(String username, String password, String url) {
@@ -186,7 +206,7 @@ public class SharePointWebController {
 				port = service.getCopySoap();
 				((BindingProvider) port).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, username);
 				((BindingProvider) port).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, password);
-				
+
 				URL convertedurl = convertToURLEscapingIllegalCharacters(url + "/_vti_bin/copy.asmx");
 				((BindingProvider) port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 						convertedurl.toString());
@@ -203,9 +223,13 @@ public class SharePointWebController {
 
 	/**
 	 * Gets the object needed for the Lists Web Service operations
-	 * @param username - the current user's username
-	 * @param password - the current user's password
-	 * @param url - the site url.
+	 * 
+	 * @param username
+	 *            - the current user's username
+	 * @param password
+	 *            - the current user's password
+	 * @param url
+	 *            - the site url.
 	 * @return the copy object.
 	 */
 	private ListsSoap getSPListSoapStub(String username, String password, String url) {
@@ -216,7 +240,7 @@ public class SharePointWebController {
 				port = service.getListsSoap();
 				((BindingProvider) port).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, username);
 				((BindingProvider) port).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, password);
-				
+
 				URL convertedurl = convertToURLEscapingIllegalCharacters(url + "/_vti_bin/Lists.asmx");
 				((BindingProvider) port).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 						convertedurl.toString());
@@ -232,9 +256,13 @@ public class SharePointWebController {
 	}
 
 	/**
+	 * Downloads a file from the server to the local machine.
+	 * 
 	 * @param filepath
+	 *            - the path to store the file.
 	 * @param testUrl
-	 * @return
+	 *            - The Url to the object on the Server.
+	 * @return True if successful, false otherwise.
 	 * @throws Exception
 	 */
 	public boolean downloadFile(String filepath, String testUrl) throws Exception {
@@ -260,9 +288,13 @@ public class SharePointWebController {
 	}
 
 	/**
+	 * Uploads a file from the local machine to the server.
+	 * 
 	 * @param filepath
+	 *            - the path where the file is stored.
 	 * @param testUrl
-	 * @return
+	 *            - the URL to store the file at.
+	 * @return True is successful, false otherwise.
 	 * @throws Exception
 	 */
 	public boolean uploadFile(String filepath, String testUrl) throws Exception {
@@ -291,14 +323,18 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * @return
+	 * Returns whether or not the controller is connected to a site.
+	 * 
+	 * @return true if connected, false otherwise.
 	 */
 	public boolean isConnected() {
 		return isConnected;
 	}
 
 	/**
-	 * @return
+	 * Gets all of the lists associated with the current site.
+	 * 
+	 * @return the list of all sites as a List<String>
 	 */
 	public List<String> getAllLists() {
 		try {
@@ -315,8 +351,11 @@ public class SharePointWebController {
 	}
 
 	/**
+	 * Gets all of the items associated with a certain list
+	 * 
 	 * @param listName
-	 * @return
+	 *            - the list to get the items for.
+	 * @return the list as a List<Object>
 	 * @throws Exception
 	 */
 	public List<Object> getAllListItems(String listName) throws Exception {
@@ -338,9 +377,13 @@ public class SharePointWebController {
 	}
 
 	/**
+	 * Gets the lists from the contents of a Soap Response!
+	 * 
 	 * @param contents
+	 *            - the soap response to filter through
 	 * @param printXML
-	 * @return
+	 *            - whether or not to print the data to console (For Debugging)
+	 * @return the list of lists as strings
 	 * @throws Exception
 	 */
 	private List<String> getListsFromContents(List<Object> contents, boolean printXML) throws Exception {
@@ -360,13 +403,11 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * @param element
-	 * @throws TransformerFactoryConfigurationError
-	 * @throws TransformerConfigurationException
-	 * @throws TransformerException
+	 * Prints the XML to console (For Debugging)
+	 * @param element - the element to print.
+	 * @throws Exception
 	 */
-	private void printElementXML(Element element)
-			throws TransformerFactoryConfigurationError, TransformerConfigurationException, TransformerException {
+	private void printElementXML(Element element) throws Exception {
 		TransformerFactory tf = TransformerFactory.newInstance();
 		Transformer transformer = tf.newTransformer();
 		transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -377,8 +418,9 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * @param valuesToReturn
-	 * @param element
+	 * Updates a list to include all items that match certain attributes.
+	 * @param valuesToReturn - the list to add items to.
+	 * @param element - the element to examine.
 	 */
 	private void findMatchingElements(List<String> valuesToReturn, Node element) {
 		NodeList children = element.getChildNodes();
@@ -401,8 +443,9 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * @param contents
-	 * @return
+	 * Gets all of the attributes associated with the current list of items
+	 * @param contents - the XML items to examine for attribute names.
+	 * @return the array of the list's attribute names.
 	 */
 	public String[] getAttributeNames(List<Object> contents) {
 		String[] names = null;
@@ -426,9 +469,10 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * @param contents
-	 * @param columnNames
-	 * @return
+	 * Returns all of the data associated with a list.
+	 * @param contents - the data to go through.
+	 * @param columnNames - the names of the columns for the data.
+	 * @return the array of item info arrays.
 	 */
 	public Object[][] getData(List<Object> contents, String[] columnNames) {
 		Object[][] data = null;
@@ -456,8 +500,9 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * @param string
-	 * @return
+	 * Converts the string to a url that contains only url-acceptable characters.
+	 * @param string - the string url to convert.
+	 * @return the URL converted from the string.
 	 */
 	public URL convertToURLEscapingIllegalCharacters(String string) {
 		try {

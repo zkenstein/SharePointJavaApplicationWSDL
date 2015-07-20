@@ -81,23 +81,39 @@ public class SPListView extends SPBaseView {
 		JList<String> listView = new JList<String>(lists.toArray(new String[lists.size()]));
 		listView.setSelectedValue(listToLoad, true);
 		ListSelectionModel listSelectionModel = listView.getSelectionModel();
-		listSelectionModel.addListSelectionListener(new ListSelectionListener() {
-
-			@Override
-			public void valueChanged(ListSelectionEvent arg0) {
-				if (!arg0.getValueIsAdjusting()) {
-					try {
-						listView.setSelectedIndex(listView.getSelectedIndex());
-						mainController.setCurrentList(listView.getSelectedValue());
-
-						mainController.updateItems();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
+		listSelectionModel.addListSelectionListener(new SPListSelectionListener(listView));
 
 		scroll.setViewportView(listView);
+	}
+	
+	/**
+	 * This class is used to dictate what happens when the list items are selected.
+	 * @author Joshua
+	 *
+	 */
+	private class SPListSelectionListener implements ListSelectionListener {
+		JList<String> listView;
+		
+		/**
+		 * This class is used to dictate what happens when the list items are selected.
+		 * @param listView - the lists to select from.
+		 */
+		public SPListSelectionListener(JList<String> listView) {
+			this.listView = listView;
+		}
+
+		@Override
+		public void valueChanged(ListSelectionEvent event) {
+			if (!event.getValueIsAdjusting()) {
+				try {
+					listView.setSelectedIndex(listView.getSelectedIndex());
+					mainController.setCurrentList(listView.getSelectedValue());
+
+					mainController.updateItems();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

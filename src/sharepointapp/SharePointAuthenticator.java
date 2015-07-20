@@ -26,6 +26,7 @@ import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 
 /**
+ * This class is used for authenticating users for a SharePoint server/site.
  * @author allarj3
  *
  */
@@ -79,6 +80,7 @@ public class SharePointAuthenticator extends Authenticator {
 	private JFrame frame;
 
 	/**
+	 * This class is used to display the authentication screen with the fields for inputing arguments.
 	 * @author allarj3
 	 *
 	 */
@@ -195,7 +197,7 @@ public class SharePointAuthenticator extends Authenticator {
 	}
 
 	/**
-	 * 
+	 * This class is used for authentication the user for SharePoint websites.
 	 */
 	public SharePointAuthenticator() {
 		super();
@@ -233,6 +235,7 @@ public class SharePointAuthenticator extends Authenticator {
 	}
 
 	/**
+	 * Returns the user's password.
 	 * @return
 	 */
 	public String getPassword() {
@@ -240,7 +243,8 @@ public class SharePointAuthenticator extends Authenticator {
 	}
 
 	/**
-	 * @return
+	 * Returns the user's domain and username
+	 * @return returns a string in the following format: DOMAIN\\username
 	 */
 	public String getDomainAndUsername() {
 		String domainBars = "";

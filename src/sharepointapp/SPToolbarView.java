@@ -31,7 +31,7 @@ public class SPToolbarView extends SPBaseView {
 	private JButton download;
 	private JButton upload;
 	private JLabel message;
-	private JButton loadingImage;
+	private JButton refreshButton;
 	private JComboBox<String> urlSelection;
 	protected boolean messageLock;
 
@@ -84,29 +84,29 @@ public class SPToolbarView extends SPBaseView {
 		URL url2 = getClass().getResource("/refreshHover.png");
 		if (url != null && url2 != null) {
 			ImageIcon imageIcon = new ImageIcon(url);
-			loadingImage = new JButton(imageIcon);
-			loadingImage.setBorderPainted(false);
-			loadingImage.setBorder(null);
+			refreshButton = new JButton(imageIcon);
+			refreshButton.setBorderPainted(false);
+			refreshButton.setBorder(null);
 			// button.setFocusable(false);
-			loadingImage.setMargin(new Insets(0, 0, 0, 0));
-			loadingImage.setContentAreaFilled(false);
-			loadingImage.setRolloverIcon(new ImageIcon(url2));
+			refreshButton.setMargin(new Insets(0, 0, 0, 0));
+			refreshButton.setContentAreaFilled(false);
+			refreshButton.setRolloverIcon(new ImageIcon(url2));
 
 		} else {
-			loadingImage = new JButton("Refresh");
+			refreshButton = new JButton("Refresh");
 		}
-		this.add(loadingImage);
-		loadingImage.setEnabled(false);
+		this.add(refreshButton);
+		refreshButton.setEnabled(false);
 
-		layout.putConstraint(SpringLayout.WEST, urlSelection, 5, SpringLayout.EAST, loadingImage);
+		layout.putConstraint(SpringLayout.WEST, urlSelection, 5, SpringLayout.EAST, refreshButton);
 		layout.putConstraint(SpringLayout.NORTH, urlSelection, 5, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.EAST, urlSelection, -5, SpringLayout.EAST, this);
 		layout.putConstraint(SpringLayout.SOUTH, urlSelection, 37, SpringLayout.NORTH, this);
 
-		layout.putConstraint(SpringLayout.WEST, loadingImage, 5, SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.NORTH, loadingImage, 5, SpringLayout.NORTH, this);
-		layout.putConstraint(SpringLayout.EAST, loadingImage, 37, SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.SOUTH, loadingImage, 37, SpringLayout.NORTH, this);
+		layout.putConstraint(SpringLayout.WEST, refreshButton, 5, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.NORTH, refreshButton, 5, SpringLayout.NORTH, this);
+		layout.putConstraint(SpringLayout.EAST, refreshButton, 37, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.SOUTH, refreshButton, 37, SpringLayout.NORTH, this);
 
 		layout.putConstraint(SpringLayout.WEST, download, -155, SpringLayout.EAST, this);
 		layout.putConstraint(SpringLayout.NORTH, download, 5, SpringLayout.SOUTH, urlSelection);
@@ -123,117 +123,169 @@ public class SPToolbarView extends SPBaseView {
 		layout.putConstraint(SpringLayout.EAST, message, -5, SpringLayout.WEST, upload);
 		layout.putConstraint(SpringLayout.SOUTH, message, -5, SpringLayout.SOUTH, this);
 
-		urlSelection.addActionListener(new ActionListener() {
-			private String last = "";
+		urlSelection.addActionListener(new URLSelectionActionListener());
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (last.compareTo((String) urlSelection.getSelectedItem()) != 0) {
-					mainController.connectToSite((String) urlSelection.getSelectedItem());
-				}
-				last = (String) urlSelection.getSelectedItem();
+		download.addActionListener(new DownloadButtonActionListener(downloadFolderChooser));
+
+		upload.addActionListener(new UploadButtonActionListener(fileUploadChooser));
+
+		refreshButton.addActionListener(new RefreshButtonActionListener());
+	}
+	
+	
+	/**
+	 * This class is used to dictate what happens when the UrlSelection drop down list is modified.
+	 * @author Joshua
+	 *
+	 */
+	private class URLSelectionActionListener implements ActionListener {
+		private String last = "";
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			if (last.compareTo((String) urlSelection.getSelectedItem()) != 0) {
+				mainController.connectToSite((String) urlSelection.getSelectedItem());
 			}
-		});
+			last = (String) urlSelection.getSelectedItem();
+		}
+	}
+	
+	
+	/**
+	 * This class is used to dictate what happens when the Download button is activated.
+	 * @author Joshua
+	 *
+	 */
+	private class DownloadButtonActionListener implements ActionListener {
+		
+		JFileChooser downloadFolderChooser;
+		
+		/**
+		 * This class is used to dictate what happens when the Download button is activated.
+		 * @param downloadFolderChooser - the selector used for picking the download directory.
+		 */
+		public DownloadButtonActionListener(JFileChooser downloadFolderChooser) {
+			this.downloadFolderChooser = downloadFolderChooser;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			clearMessageText();
 
-		download.addActionListener(new ActionListener() {
+			int returnVal = downloadFolderChooser.showOpenDialog(MainView.frame);
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				clearMessageText();
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File downloadFolder = downloadFolderChooser.getSelectedFile();
 
-				int returnVal = downloadFolderChooser.showOpenDialog(MainView.frame);
+				if (!downloadFolder.exists() || !downloadFolder.isDirectory()) {
+					downloadFolder = new File(DEFAULT_DOWNLOAD_LOCATION);
+				}
 
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					File downloadFolder = downloadFolderChooser.getSelectedFile();
+				try {
+					prefs.put(DOWNLOAD_LOCATION_KEY, downloadFolder.getCanonicalPath());
+					prefs.flush();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+				List<String> paths = mainController.getCurrentItemPaths();
+				message.setText("Downloading " + paths.size() + " " + getFileString(paths.size()) + "...");
+				messageLock = true;
 
-					if (!downloadFolder.exists() || !downloadFolder.isDirectory()) {
-						downloadFolder = new File(DEFAULT_DOWNLOAD_LOCATION);
-					}
+				final File downloadFolderFinal = downloadFolder;
 
-					try {
-						prefs.put(DOWNLOAD_LOCATION_KEY, downloadFolder.getCanonicalPath());
-						prefs.flush();
-					} catch (IOException e2) {
-						e2.printStackTrace();
-					}
-					List<String> paths = mainController.getCurrentItemPaths();
-					message.setText("Downloading " + paths.size() + " " + getFileString(paths.size()) + "...");
-					messageLock = true;
-
-					final File downloadFolderFinal = downloadFolder;
-
-					(new Thread() {
-						public void run() {
-							int count = 0;
-							for (String path : paths) {
-								String[] pathParts = path.split("/");
-								try {
-									String downloadFilePath = downloadFolderFinal.getCanonicalPath() + "\\"
-											+ pathParts[pathParts.length - 1];
-									if (webController.downloadFile(downloadFilePath, path)) {
-										count++;
-									}
-								} catch (Exception e1) {
-									e1.printStackTrace();
+				(new Thread() {
+					public void run() {
+						int count = 0;
+						for (String path : paths) {
+							String[] pathParts = path.split("/");
+							try {
+								String downloadFilePath = downloadFolderFinal.getCanonicalPath() + "\\"
+										+ pathParts[pathParts.length - 1];
+								if (webController.downloadFile(downloadFilePath, path)) {
+									count++;
 								}
+							} catch (Exception e1) {
+								e1.printStackTrace();
 							}
-							messageLock = false;
-							setMessageText(getFileString(paths.size()) + " Downloaded: " + count + " / " + paths.size(),
-									count == paths.size());
-						};
+						}
+						messageLock = false;
+						setMessageText(getFileString(paths.size()) + " Downloaded: " + count + " / " + paths.size(),
+								count == paths.size());
+					};
 
-					}).start();
-				}
+				}).start();
 			}
-		});
+		}
+	}
+	
+	/**
+	 * This class is used to dictate what happens when the upload button is pressed.
+	 * @author Joshua
+	 *
+	 */
+	private class UploadButtonActionListener implements ActionListener {
 
-		upload.addActionListener(new ActionListener() {
+		JFileChooser fileUploadChooser;
+		
+		
+		/**
+		 * This class is used to dictate what happens when the upload button is pressed.
+		 * @param fileUploadChooser - the tool for selecting the files to upload.
+		 */
+		public UploadButtonActionListener(JFileChooser fileUploadChooser) {
+			this.fileUploadChooser = fileUploadChooser;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			clearMessageText();
+			int returnVal = fileUploadChooser.showOpenDialog(MainView.frame);
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				clearMessageText();
-				int returnVal = fileUploadChooser.showOpenDialog(MainView.frame);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				final String listName = mainController.getCurrentList();
+				final File[] files = fileUploadChooser.getSelectedFiles();
+				message.setText("Uploading " + files.length + " " + getFileString(files.length) + "...");
+				messageLock = true;
 
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					final String listName = mainController.getCurrentList();
-					final File[] files = fileUploadChooser.getSelectedFiles();
-					message.setText("Uploading " + files.length + " " + getFileString(files.length) + "...");
-					messageLock = true;
-
-					(new Thread() {
-						public void run() {
-							int count = 0;
-							for (File file : files) {
-								try {
-									String listPath = webController.getDefaultUrlForList(listName);
-									if (listPath != null && webController.uploadFile(file.getAbsolutePath(),
-											listPath + "/" + file.getName())) {
-										count++;
-									}
-
-								} catch (Exception e1) {
-									e1.printStackTrace();
+				(new Thread() {
+					public void run() {
+						int count = 0;
+						for (File file : files) {
+							try {
+								String listPath = webController.getDefaultUrlForList(listName);
+								if (listPath != null && webController.uploadFile(file.getAbsolutePath(),
+										listPath + "/" + file.getName())) {
+									count++;
 								}
+
+							} catch (Exception e1) {
+								e1.printStackTrace();
 							}
-							mainController.setCurrentList(listName);
-							mainController.updateItems();
-							messageLock = false;
-							setMessageText(getFileString(files.length) + " Uploaded: " + count + " / " + files.length,
-									count == files.length);
-						};
-					}).start();
-				}
+						}
+						mainController.setCurrentList(listName);
+						mainController.updateItems();
+						messageLock = false;
+						setMessageText(getFileString(files.length) + " Uploaded: " + count + " / " + files.length,
+								count == files.length);
+					};
+				}).start();
 			}
-		});
+		}
+	}
+	
+	/**
+	 * This class is used to dictate what happens when the refresh button is pressed.
+	 * @author Joshua
+	 *
+	 */
+	private class RefreshButtonActionListener implements ActionListener {
 
-		loadingImage.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String currentList = mainController.getCurrentList();
-				webController.connectToUrl((String) urlSelection.getSelectedItem(), currentList);
-			}
-		});
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String currentList = mainController.getCurrentList();
+			webController.connectToUrl((String) urlSelection.getSelectedItem(), currentList);
+		}
 	}
 
 	/**
@@ -292,7 +344,7 @@ public class SPToolbarView extends SPBaseView {
 	 * @param willEnable - true to enable the button, false to disable
 	 */
 	public void enableRefreshButton(boolean willEnable) {
-		loadingImage.setEnabled(willEnable);
+		refreshButton.setEnabled(willEnable);
 	}
 	
 	/**
@@ -319,7 +371,7 @@ public class SPToolbarView extends SPBaseView {
 
 	/**
 	 * The action when the connection is completed
-	 * @param listName
+	 * @param listName - the list that was selected to be displayed
 	 */
 	public void finishedConnection(String listName) {
 		enableUploadButton(true, listName);
