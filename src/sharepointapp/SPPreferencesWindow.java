@@ -11,10 +11,12 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
@@ -23,17 +25,14 @@ import javax.swing.WindowConstants;
  * @author Joshua
  *
  */
-public class SPPreferencesView {
-
-	@SuppressWarnings("unused")
-	private static final long serialVersionUID = -3899669904754410498L;
+public class SPPreferencesWindow {
 
 	private SPPreferences prefs = SPPreferences.GetPreferences();
 	public JFrame frame = new JFrame("SharePoint in Java - Preferences");
 
 	private List<PrefElement> preferenceElements = new ArrayList<PrefElement>();
 
-	private static SPPreferencesView instance = new SPPreferencesView();
+	private static SPPreferencesWindow instance = new SPPreferencesWindow();
 	
 	Runnable postMethodToRun;
 
@@ -64,6 +63,7 @@ public class SPPreferencesView {
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			frame.setMinimumSize(new Dimension(600, 500));
 			frame.setVisible(true);
+			frame.setLocationRelativeTo(null);
 			SPUtilities.setFrameIcon(frame);
 
 			pane = frame.getContentPane();
@@ -101,8 +101,17 @@ public class SPPreferencesView {
 			paneLayout.putConstraint(SpringLayout.NORTH, saveButton, -30, SpringLayout.SOUTH, contentPanel);
 			paneLayout.putConstraint(SpringLayout.EAST, saveButton, -150, SpringLayout.EAST, contentPanel);
 			paneLayout.putConstraint(SpringLayout.SOUTH, saveButton, -10, SpringLayout.SOUTH, contentPanel);
+			
+			JLabel infoDisplay = new JLabel("Remember to press 'Enter' when finished writing in a cell!");
+			contentPanel.add(infoDisplay);
+			infoDisplay.setHorizontalAlignment(SwingConstants.CENTER);
 
-			contentPanel.setPreferredSize(new Dimension(550, boxSizes + 50));
+			paneLayout.putConstraint(SpringLayout.WEST, infoDisplay, 10, SpringLayout.WEST, contentPanel);
+			paneLayout.putConstraint(SpringLayout.NORTH, infoDisplay, -30, SpringLayout.NORTH, saveButton);
+			paneLayout.putConstraint(SpringLayout.EAST, infoDisplay, -10, SpringLayout.EAST, contentPanel);
+			paneLayout.putConstraint(SpringLayout.SOUTH, infoDisplay, -10, SpringLayout.NORTH, saveButton);
+
+			contentPanel.setPreferredSize(new Dimension(550, boxSizes + 70));
 			scroll.setViewportView(contentPanel);
 		}
 
@@ -228,8 +237,9 @@ public class SPPreferencesView {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+
+			instance = new SPPreferencesWindow();
 			instance.open();
-			instance = new SPPreferencesView();
 			instance.postMethodToRun = postMethod;
 		}
 

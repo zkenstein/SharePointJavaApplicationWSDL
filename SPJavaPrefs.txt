@@ -1,4 +1,4 @@
-DOWNLOAD_LOCATION;#C:\Users\allarj3\Documents\TestThemes
+DOWNLOAD_LOCATION;#C:\Users\allarj3\Documents
 DOMAIN;#CORP
-URLS;#New URL---http://usitisusel3661c---https://sharepointfoundation.sites.emc.com---https://sharepointfoundation.sites.emc.com/EMCITSharePoint/InternTestSite
+URLS;#New URL---https://sharepointfoundation.sites.emc.com/EMCITSharePoint/InternTestSite/---http://usitisusel3661c---https://sharepointfoundation.sites.emc.com/EMCITSharePoint/InternTestSite
 USERNAME;#allarj3

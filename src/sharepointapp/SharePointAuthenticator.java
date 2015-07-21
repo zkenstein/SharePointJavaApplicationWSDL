@@ -3,6 +3,9 @@ package sharepointapp;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.net.Authenticator;
@@ -27,6 +30,7 @@ import javax.swing.WindowConstants;
 
 /**
  * This class is used for authenticating users for a SharePoint server/site.
+ * 
  * @author allarj3
  *
  */
@@ -80,7 +84,9 @@ public class SharePointAuthenticator extends Authenticator {
 	private JFrame frame;
 
 	/**
-	 * This class is used to display the authentication screen with the fields for inputing arguments.
+	 * This class is used to display the authentication screen with the fields
+	 * for inputing arguments.
+	 * 
 	 * @author allarj3
 	 *
 	 */
@@ -89,6 +95,7 @@ public class SharePointAuthenticator extends Authenticator {
 		@Override
 		public void run() {
 			frame = new JFrame("SharePoint in Java - Authenticate");
+			frame.setLocationRelativeTo(MainView.frame);
 
 			SPUtilities.setFrameIcon(frame);
 			Container pane = frame.getContentPane();
@@ -152,6 +159,16 @@ public class SharePointAuthenticator extends Authenticator {
 			paneLayout.putConstraint(SpringLayout.EAST, submitBtn, -5, SpringLayout.EAST, pane);
 			paneLayout.putConstraint(SpringLayout.SOUTH, submitBtn, -5, SpringLayout.SOUTH, pane);
 
+
+
+			passwordBox.addKeyListener(new KeyAdapter() {
+				public void keyReleased(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						submitBtn.doClick();
+					}
+				}
+			});
+			
 			frame.setVisible(true);
 			frame.addWindowListener(new WindowListener() {
 
@@ -207,7 +224,9 @@ public class SharePointAuthenticator extends Authenticator {
 		prefs.registerSingleValueOnlyKey(USERNAME_KEY);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.net.Authenticator#getPasswordAuthentication()
 	 */
 	@Override
@@ -240,6 +259,7 @@ public class SharePointAuthenticator extends Authenticator {
 
 	/**
 	 * Returns the user's password.
+	 * 
 	 * @return
 	 */
 	public String getPassword() {
@@ -248,6 +268,7 @@ public class SharePointAuthenticator extends Authenticator {
 
 	/**
 	 * Returns the user's domain and username
+	 * 
 	 * @return returns a string in the following format: DOMAIN\\username
 	 */
 	public String getDomainAndUsername() {

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -68,7 +69,8 @@ public class SPToolbarView extends SPBaseView {
 		prefs.add(URL_LIST_KEY, "New URL");
 		List<String> urls = prefs.getAll(URL_LIST_KEY);
 		String[] urlArray = urls.toArray(new String[urls.size()]);
-		urlSelection = new JComboBox<String>(urlArray);
+		//urlSelection = new JComboBox<String>(urlArray);
+		urlSelection = new JComboBox<String>(new DefaultComboBoxModel<String>(urlArray));
 		urlSelection.setEnabled(true);
 		urlSelection.setEditable(true);
 		this.add(urlSelection);
@@ -142,7 +144,15 @@ public class SPToolbarView extends SPBaseView {
 
 		refreshButton.addActionListener(new RefreshButtonActionListener());
 		
-		preferencesButton.addActionListener(new SPPreferencesView.SPPreferencesActionListener(null));
+		preferencesButton.addActionListener(new SPPreferencesWindow.SPPreferencesActionListener(new Runnable() {
+			
+			@Override
+			public void run() {
+				List<String> newUrls = prefs.getAll(URL_LIST_KEY);
+				String[] newUrlArray = newUrls.toArray(new String[newUrls.size()]);
+				urlSelection.setModel(new DefaultComboBoxModel<String>(newUrlArray));
+			}
+		}));
 	}
 	
 	
@@ -377,7 +387,9 @@ public class SPToolbarView extends SPBaseView {
 		upload.setEnabled(false);
 		clearMessageText();
 		if (prefs.add(URL_LIST_KEY, url)) {
-			//urlSelection.addItem(url);
+			urlSelection.addItem(url);
+			//urlSelection.removeAllItems();
+			//urlSelection.revalidate();
 			prefs.flush();
 		}
 	}
