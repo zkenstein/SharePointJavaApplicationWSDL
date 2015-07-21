@@ -39,6 +39,10 @@ public class MainView {
 			SPItemView itemView = SPItemView.getInstance();
 			SharePointMainController.getInstance().initialize();
 			Container pane = frame.getContentPane();
+			
+			SPUtilities.setFrameIcon(frame); 
+			
+			
 			SpringLayout paneLayout = new SpringLayout();
 			pane.setLayout(paneLayout);
 			pane.add(toolbar);
@@ -76,5 +80,7 @@ public class MainView {
 		}
 
 	}
+
+	
 
 }

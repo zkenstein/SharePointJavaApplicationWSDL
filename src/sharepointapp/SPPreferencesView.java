@@ -1,11 +1,11 @@
 package sharepointapp;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +64,7 @@ public class SPPreferencesView {
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			frame.setMinimumSize(new Dimension(600, 500));
 			frame.setVisible(true);
+			SPUtilities.setFrameIcon(frame);
 
 			pane = frame.getContentPane();
 			paneLayout = new SpringLayout();
@@ -71,6 +72,7 @@ public class SPPreferencesView {
 			scroll = new JScrollPane();
 			previous = contentPanel;
 			contentPanel.setLayout(paneLayout);
+			contentPanel.setBackground(SPUtilities.getLightThemeColor());
 			pane.add(scroll);
 
 			List<String> keys = prefs.getKeys();
@@ -190,8 +192,11 @@ public class SPPreferencesView {
 			this.setLayout(layout);
 
 			table = new JTable(tableData, new String[] { key });
+			table.setBackground(Color.white);
 
 			JScrollPane scroll = new JScrollPane(table);
+			scroll.setBackground(Color.white);
+			scroll.getViewport().setBackground(Color.white);
 			this.add(scroll);
 			layout.putConstraint(SpringLayout.WEST, scroll, 0, SpringLayout.WEST, this);
 			layout.putConstraint(SpringLayout.NORTH, scroll, 0, SpringLayout.NORTH, this);

@@ -9,14 +9,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
-import javax.swing.event.ListDataListener;
 
 /**
  * This class is responsible for showing the toolbar buttons, messages, and url input.
@@ -31,7 +29,6 @@ public class SPToolbarView extends SPBaseView {
 	private static final String URL_LIST_KEY = "URLS";
 	private static final String DOWNLOAD_LOCATION_KEY = "DOWNLOAD_LOCATION";
 	private SPPreferences prefs = SPPreferences.GetPreferences();
-	private ComboBoxModel<String> defaultModel;
 	private JButton download;
 	private JButton upload;
 	private JLabel message;
@@ -67,7 +64,7 @@ public class SPToolbarView extends SPBaseView {
 				new File(prefs.getFirstOrDefault(DOWNLOAD_LOCATION_KEY, DEFAULT_DOWNLOAD_LOCATION)));
 		downloadFolderChooser.setDialogTitle("Choose Destination Folder");
 
-		setBackground(new Color(132, 178, 139));
+		setBackground(SPUtilities.getDarkThemeColor());
 		prefs.add(URL_LIST_KEY, "New URL");
 		List<String> urls = prefs.getAll(URL_LIST_KEY);
 		String[] urlArray = urls.toArray(new String[urls.size()]);
@@ -75,7 +72,6 @@ public class SPToolbarView extends SPBaseView {
 		urlSelection.setEnabled(true);
 		urlSelection.setEditable(true);
 		this.add(urlSelection);
-		defaultModel = urlSelection.getModel();
 
 		download = new JButton("Download File(s)");
 		download.setEnabled(false);

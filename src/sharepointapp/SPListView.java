@@ -1,6 +1,5 @@
 package sharepointapp;
 
-import java.awt.Color;
 import java.util.List;
 
 import javax.swing.JList;
@@ -37,7 +36,7 @@ public class SPListView extends SPBaseView {
 	private SPListView() {
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
-		setBackground(new Color(132, 178, 139));
+		setBackground(SPUtilities.getDarkThemeColor());
 
 		scroll = new JScrollPane();
 		scroll.setViewportView(emptyList);

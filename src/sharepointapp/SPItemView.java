@@ -45,10 +45,10 @@ public class SPItemView extends SPBaseView {
 	private SPItemView() {
 
 		this.add(scroll);
-		scroll.setBackground(new Color(240, 255, 242));
-		scroll.getViewport().setBackground(new Color(240, 255, 242));
+		scroll.setBackground(SPUtilities.getLightThemeColor());
+		scroll.getViewport().setBackground(SPUtilities.getLightThemeColor());
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		setBackground(new Color(240, 255, 242));
+		setBackground(SPUtilities.getLightThemeColor());
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 

@@ -89,6 +89,8 @@ public class SharePointAuthenticator extends Authenticator {
 		@Override
 		public void run() {
 			frame = new JFrame("SharePoint in Java - Authenticate");
+
+			SPUtilities.setFrameIcon(frame);
 			Container pane = frame.getContentPane();
 
 			SpringLayout paneLayout = new SpringLayout();
