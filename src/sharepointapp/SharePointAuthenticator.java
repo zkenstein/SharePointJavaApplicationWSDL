@@ -9,15 +9,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,6 +18,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
+
 
 /**
  * This class is used for authenticating users for a SharePoint server/site.
@@ -41,38 +34,39 @@ public class SharePointAuthenticator extends Authenticator {
 
 	private boolean exited;
 
+	
 	// This will accept all SSL Certificates without using a trust store.
 	// Beware. This should be fixed later.
 	// Borrowed from:
-	// https://kkarthikeyanblog.wordpress.com/2013/01/03/java-httphttps-client-example-ignore-ssl/
-	static {
-		try {
-			TrustManager[] trustAllCerts = { new X509TrustManager() {
-				public X509Certificate[] getAcceptedIssuers() {
-					return null;
-				}
-
-				public void checkClientTrusted(X509Certificate[] certs, String authType) {
-				}
-
-				public void checkServerTrusted(X509Certificate[] certs, String authType) {
-				}
-			} };
-			SSLContext sc = SSLContext.getInstance("SSL");
-
-			HostnameVerifier hv = new HostnameVerifier() {
-				public boolean verify(String arg0, SSLSession arg1) {
-					return true;
-				}
-			};
-			sc.init(null, trustAllCerts, new SecureRandom());
-
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-			HttpsURLConnection.setDefaultHostnameVerifier(hv);
-		} catch (Exception localException) {
-			localException.printStackTrace();
-		}
-	}
+//	// https://kkarthikeyanblog.wordpress.com/2013/01/03/java-httphttps-client-example-ignore-ssl/
+//	static {
+//		try {
+//			TrustManager[] trustAllCerts = { new X509TrustManager() {
+//				public X509Certificate[] getAcceptedIssuers() {
+//					return null;
+//				}
+//
+//				public void checkClientTrusted(X509Certificate[] certs, String authType) {
+//				}
+//
+//				public void checkServerTrusted(X509Certificate[] certs, String authType) {
+//				}
+//			} };
+//			SSLContext sc = SSLContext.getInstance("SSL");
+//
+//			HostnameVerifier hv = new HostnameVerifier() {
+//				public boolean verify(String arg0, SSLSession arg1) {
+//					return true;
+//				}
+//			};
+//			sc.init(null, trustAllCerts, new SecureRandom());
+//
+//			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+//			HttpsURLConnection.setDefaultHostnameVerifier(hv);
+//		} catch (Exception localException) {
+//			localException.printStackTrace();
+//		}
+//	}
 
 	private SPPreferences prefs = SPPreferences.GetPreferences();
 
@@ -93,6 +87,7 @@ public class SharePointAuthenticator extends Authenticator {
 
 		@Override
 		public void run() {
+			
 			frame = new JFrame("SharePoint in Java - Authenticate");
 			frame.setLocationRelativeTo(MainView.frame);
 

@@ -2,10 +2,12 @@ package sharepointapp;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.Authenticator;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -22,6 +26,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -319,6 +324,32 @@ public class SharePointWebController {
 		}
 	}
 
+	public Document getSearch(String name) {
+		try {
+
+			URL searchUrl = new URL(
+					BasesharepointUrl + "/_layouts/DocumentWebService/get_document.asmx/GetDocumentURLS?name=" + name);
+			URLConnection conn = searchUrl.openConnection();
+			conn.setConnectTimeout(5000);
+			conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
+			conn.connect();
+
+			InputStream in = conn.getInputStream();
+			Document doc = null;
+			if (in.available() > 0) {
+
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				doc = builder.parse(in);
+			}
+
+			return doc;
+
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
 	/**
 	 * Returns whether or not the controller is connected to a site.
 	 * 
@@ -401,7 +432,9 @@ public class SharePointWebController {
 
 	/**
 	 * Prints the XML to console (For Debugging)
-	 * @param element - the element to print.
+	 * 
+	 * @param element
+	 *            - the element to print.
 	 * @throws Exception
 	 */
 	private void printElementXML(Element element) throws Exception {
@@ -416,8 +449,11 @@ public class SharePointWebController {
 
 	/**
 	 * Updates a list to include all items that match certain attributes.
-	 * @param valuesToReturn - the list to add items to.
-	 * @param element - the element to examine.
+	 * 
+	 * @param valuesToReturn
+	 *            - the list to add items to.
+	 * @param element
+	 *            - the element to examine.
 	 */
 	private void findMatchingElements(List<String> valuesToReturn, Node element) {
 		NodeList children = element.getChildNodes();
@@ -441,7 +477,9 @@ public class SharePointWebController {
 
 	/**
 	 * Gets all of the attributes associated with the current list of items
-	 * @param contents - the XML items to examine for attribute names.
+	 * 
+	 * @param contents
+	 *            - the XML items to examine for attribute names.
 	 * @return the array of the list's attribute names.
 	 */
 	public String[] getAttributeNames(List<Object> contents) {
@@ -467,8 +505,11 @@ public class SharePointWebController {
 
 	/**
 	 * Returns all of the data associated with a list.
-	 * @param contents - the data to go through.
-	 * @param columnNames - the names of the columns for the data.
+	 * 
+	 * @param contents
+	 *            - the data to go through.
+	 * @param columnNames
+	 *            - the names of the columns for the data.
 	 * @return the array of item info arrays.
 	 */
 	public Object[][] getData(List<Object> contents, String[] columnNames) {
@@ -497,8 +538,11 @@ public class SharePointWebController {
 	}
 
 	/**
-	 * Converts the string to a url that contains only url-acceptable characters.
-	 * @param string - the string url to convert.
+	 * Converts the string to a url that contains only url-acceptable
+	 * characters.
+	 * 
+	 * @param string
+	 *            - the string url to convert.
 	 * @return the URL converted from the string.
 	 */
 	public URL convertToURLEscapingIllegalCharacters(String string) {

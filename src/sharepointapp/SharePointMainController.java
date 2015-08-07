@@ -2,6 +2,10 @@ package sharepointapp;
 
 import java.util.List;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 /**
  * This is the class responsible for communicating between the different views and for managing different processes.
  * This allows the ListView, ItemView, ToolbarView, and Web Controller to exist without knowing about each other.
@@ -110,6 +114,37 @@ public class SharePointMainController {
 			}
 
 			currentItemsThread = null;
+		}
+	}
+	
+	public void displayLoading(boolean willDisplay){
+		if(willDisplay){
+			itemView.startedLoadingItems();
+		}
+		else{
+			itemView.finishedLoadingItems();
+		}
+	}
+	
+	public void getSearch(String search){
+		Document doc = webController.getSearch(search);
+		if(doc == null){
+			displayLoading(false);
+			displayMessages("Failed to search site", "Search Failed", false);
+			return;
+		}
+		listView.setSelected(null);
+
+		NodeList fileCountElements = doc.getDocumentElement().getElementsByTagName("FileCount");
+		if (fileCountElements.getLength() == 1) {
+			Node fileCount = fileCountElements.item(0);
+			displayLoading(false);
+			displayMessages("Files Found: " + fileCount.getTextContent(), null, true);
+		}
+		
+		NodeList fileElements = doc.getDocumentElement().getElementsByTagName("File");
+		if (fileElements != null && fileElements.getLength() > 0) {
+			itemView.UpdateTableWithSearch(fileElements);
 		}
 	}
 

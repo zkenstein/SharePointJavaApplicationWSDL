@@ -15,15 +15,22 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 /**
- * This class is responsible for showing the toolbar buttons, messages, and url input.
+ * This class is responsible for showing the toolbar buttons, messages, and url
+ * input.
+ * 
  * @author allarj3
  *
  */
 public class SPToolbarView extends SPBaseView {
-	private static final int BUTTON_SIZE = 140;
+	private static final int BUTTON_SIZE = 130;
 	private static final long serialVersionUID = -7024445311746875546L;
 	private static final String DEFAULT_DOWNLOAD_LOCATION = ".";
 	private static SPToolbarView instance = new SPToolbarView();
@@ -35,11 +42,14 @@ public class SPToolbarView extends SPBaseView {
 	private JLabel message;
 	private JButton refreshButton;
 	private JButton preferencesButton;
+	private JButton searchButton;
+	private JTextField search;
 	private JComboBox<String> urlSelection;
 	protected boolean messageLock;
 
 	/**
 	 * Returns the static instance of this class.
+	 * 
 	 * @return
 	 */
 	public static SPToolbarView getInstance() {
@@ -69,7 +79,7 @@ public class SPToolbarView extends SPBaseView {
 		prefs.add(URL_LIST_KEY, "New URL");
 		List<String> urls = prefs.getAll(URL_LIST_KEY);
 		String[] urlArray = urls.toArray(new String[urls.size()]);
-		//urlSelection = new JComboBox<String>(urlArray);
+		// urlSelection = new JComboBox<String>(urlArray);
 		urlSelection = new JComboBox<String>(new DefaultComboBoxModel<String>(urlArray));
 		urlSelection.setEnabled(true);
 		urlSelection.setEditable(true);
@@ -79,10 +89,16 @@ public class SPToolbarView extends SPBaseView {
 		download.setEnabled(false);
 		upload = new JButton("Upload File(s)");
 		upload.setEnabled(false);
+
+		searchButton = new JButton("Search Web");
+		searchButton.setEnabled(false);
+		search = new JTextField("");
 		message = new JLabel("");
 		this.add(download);
 		this.add(upload);
 		this.add(message);
+		this.add(searchButton);
+		this.add(search);
 		message.setHorizontalAlignment(JLabel.CENTER);
 
 		URL url = getClass().getResource("/refresh.png");
@@ -102,7 +118,7 @@ public class SPToolbarView extends SPBaseView {
 		}
 		this.add(refreshButton);
 		refreshButton.setEnabled(false);
-		
+
 		preferencesButton = new JButton("Preferences");
 		this.add(preferencesButton);
 
@@ -131,9 +147,19 @@ public class SPToolbarView extends SPBaseView {
 		layout.putConstraint(SpringLayout.EAST, upload, -5, SpringLayout.WEST, download);
 		layout.putConstraint(SpringLayout.SOUTH, upload, -5, SpringLayout.SOUTH, this);
 
+		layout.putConstraint(SpringLayout.WEST, searchButton, -BUTTON_SIZE - 5, SpringLayout.WEST, upload);
+		layout.putConstraint(SpringLayout.NORTH, searchButton, 5, SpringLayout.SOUTH, urlSelection);
+		layout.putConstraint(SpringLayout.EAST, searchButton, -5, SpringLayout.WEST, upload);
+		layout.putConstraint(SpringLayout.SOUTH, searchButton, -5, SpringLayout.SOUTH, this);
+
+		layout.putConstraint(SpringLayout.WEST, search, -BUTTON_SIZE - 5, SpringLayout.WEST, searchButton);
+		layout.putConstraint(SpringLayout.NORTH, search, 5, SpringLayout.SOUTH, urlSelection);
+		layout.putConstraint(SpringLayout.EAST, search, -5, SpringLayout.WEST, searchButton);
+		layout.putConstraint(SpringLayout.SOUTH, search, -5, SpringLayout.SOUTH, this);
+
 		layout.putConstraint(SpringLayout.WEST, message, 5, SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, message, 5, SpringLayout.SOUTH, urlSelection);
-		layout.putConstraint(SpringLayout.EAST, message, -5, SpringLayout.WEST, upload);
+		layout.putConstraint(SpringLayout.EAST, message, -5, SpringLayout.WEST, search);
 		layout.putConstraint(SpringLayout.SOUTH, message, -5, SpringLayout.SOUTH, this);
 
 		urlSelection.addActionListener(new URLSelectionActionListener());
@@ -143,9 +169,9 @@ public class SPToolbarView extends SPBaseView {
 		upload.addActionListener(new UploadButtonActionListener(fileUploadChooser));
 
 		refreshButton.addActionListener(new RefreshButtonActionListener());
-		
+
 		preferencesButton.addActionListener(new SPPreferencesWindow.SPPreferencesActionListener(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				List<String> newUrls = prefs.getAll(URL_LIST_KEY);
@@ -153,11 +179,40 @@ public class SPToolbarView extends SPBaseView {
 				urlSelection.setModel(new DefaultComboBoxModel<String>(newUrlArray));
 			}
 		}));
+
+		searchButton.addActionListener(new SPSearchActionListener());
 	}
-	
-	
+
 	/**
-	 * This class is used to dictate what happens when the UrlSelection drop down list is modified.
+	 * This class is used to dictate what happens when the search button is
+	 * pressed.
+	 * 
+	 * @author Joshua
+	 *
+	 */
+	private class SPSearchActionListener implements ActionListener {
+
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				mainController.displayLoading(true);
+				(new Thread() {
+					public void run() {
+						mainController.getSearch(search.getText());
+					};
+				}).start();
+				
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * This class is used to dictate what happens when the UrlSelection drop
+	 * down list is modified.
+	 * 
 	 * @author Joshua
 	 *
 	 */
@@ -166,32 +221,36 @@ public class SPToolbarView extends SPBaseView {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+
 			if (last.compareTo((String) urlSelection.getSelectedItem()) != 0) {
 				mainController.connectToSite((String) urlSelection.getSelectedItem());
 			}
 			last = (String) urlSelection.getSelectedItem();
 		}
 	}
-	
-	
+
 	/**
-	 * This class is used to dictate what happens when the Download button is activated.
+	 * This class is used to dictate what happens when the Download button is
+	 * activated.
+	 * 
 	 * @author Joshua
 	 *
 	 */
 	private class DownloadButtonActionListener implements ActionListener {
-		
+
 		JFileChooser downloadFolderChooser;
-		
+
 		/**
-		 * This class is used to dictate what happens when the Download button is activated.
-		 * @param downloadFolderChooser - the selector used for picking the download directory.
+		 * This class is used to dictate what happens when the Download button
+		 * is activated.
+		 * 
+		 * @param downloadFolderChooser
+		 *            - the selector used for picking the download directory.
 		 */
 		public DownloadButtonActionListener(JFileChooser downloadFolderChooser) {
 			this.downloadFolderChooser = downloadFolderChooser;
 		}
-		
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			clearMessageText();
@@ -241,25 +300,29 @@ public class SPToolbarView extends SPBaseView {
 			}
 		}
 	}
-	
+
 	/**
-	 * This class is used to dictate what happens when the upload button is pressed.
+	 * This class is used to dictate what happens when the upload button is
+	 * pressed.
+	 * 
 	 * @author Joshua
 	 *
 	 */
 	private class UploadButtonActionListener implements ActionListener {
 
 		JFileChooser fileUploadChooser;
-		
-		
+
 		/**
-		 * This class is used to dictate what happens when the upload button is pressed.
-		 * @param fileUploadChooser - the tool for selecting the files to upload.
+		 * This class is used to dictate what happens when the upload button is
+		 * pressed.
+		 * 
+		 * @param fileUploadChooser
+		 *            - the tool for selecting the files to upload.
 		 */
 		public UploadButtonActionListener(JFileChooser fileUploadChooser) {
 			this.fileUploadChooser = fileUploadChooser;
 		}
-		
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			clearMessageText();
@@ -296,9 +359,11 @@ public class SPToolbarView extends SPBaseView {
 			}
 		}
 	}
-	
+
 	/**
-	 * This class is used to dictate what happens when the refresh button is pressed.
+	 * This class is used to dictate what happens when the refresh button is
+	 * pressed.
+	 * 
 	 * @author Joshua
 	 *
 	 */
@@ -313,7 +378,9 @@ public class SPToolbarView extends SPBaseView {
 
 	/**
 	 * Gets Files/File based upon the count
-	 * @param size - how many files there are
+	 * 
+	 * @param size
+	 *            - how many files there are
 	 * @return "File" if size is 1, "Files" otherwise.
 	 */
 	protected String getFileString(int size) {
@@ -335,8 +402,12 @@ public class SPToolbarView extends SPBaseView {
 
 	/**
 	 * Sets the message associated with this view.
-	 * @param messageText - the message to show.
-	 * @param isSuccessful - used to determine if the message was for a success or failure.
+	 * 
+	 * @param messageText
+	 *            - the message to show.
+	 * @param isSuccessful
+	 *            - used to determine if the message was for a success or
+	 *            failure.
 	 */
 	public void setMessageText(String messageText, boolean isSuccessful) {
 		if (!messageLock) {
@@ -351,8 +422,12 @@ public class SPToolbarView extends SPBaseView {
 
 	/**
 	 * Enables/Disables the upload button
-	 * @param enable - whether to enable or disable the button
-	 * @param listName - the list name, used to determine if the upload button can be enabled
+	 * 
+	 * @param enable
+	 *            - whether to enable or disable the button
+	 * @param listName
+	 *            - the list name, used to determine if the upload button can be
+	 *            enabled
 	 */
 	public void enableUploadButton(boolean enable, String listName) {
 		if (webController.getDefaultUrlForList(listName) != null) {
@@ -364,14 +439,18 @@ public class SPToolbarView extends SPBaseView {
 
 	/**
 	 * Enables/Disables the refresh button
-	 * @param willEnable - true to enable the button, false to disable
+	 * 
+	 * @param willEnable
+	 *            - true to enable the button, false to disable
 	 */
 	public void enableRefreshButton(boolean willEnable) {
 		refreshButton.setEnabled(willEnable);
 	}
-	
+
 	/**
-	 * Enables/Disables the download button, based on if there are downloadable items.
+	 * Enables/Disables the download button, based on if there are downloadable
+	 * items.
+	 * 
 	 * @param areDownloadble
 	 */
 	public void enableDownloadButton(boolean areDownloadble) {
@@ -380,28 +459,33 @@ public class SPToolbarView extends SPBaseView {
 
 	/**
 	 * Configures the view during initial site connection.
-	 * @param url - the url that is being connected
+	 * 
+	 * @param url
+	 *            - the url that is being connected
 	 */
 	public void configureConnectingViewStart(String url) {
 		enableRefreshButton(false);
 		upload.setEnabled(false);
+		searchButton.setEnabled(false);
 		clearMessageText();
 		if (prefs.add(URL_LIST_KEY, url)) {
 			urlSelection.addItem(url);
-			//urlSelection.removeAllItems();
-			//urlSelection.revalidate();
+			// urlSelection.removeAllItems();
+			// urlSelection.revalidate();
 			prefs.flush();
 		}
 	}
 
 	/**
 	 * The action when the connection is completed
-	 * @param listName - the list that was selected to be displayed
+	 * 
+	 * @param listName
+	 *            - the list that was selected to be displayed
 	 */
 	public void finishedConnection(String listName) {
 		enableUploadButton(true, listName);
 		enableRefreshButton(true);
+		searchButton.setEnabled(true);
 	}
 
-	
 }

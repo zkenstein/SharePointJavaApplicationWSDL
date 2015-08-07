@@ -30,8 +30,12 @@ public class MainView {
 		 */
 		@Override
 		public void run() {
+
+			System.setProperty("javax.net.ssl.trustStore", "./foundationSites");
+			System.setProperty("sun.net.client.defaultConnectTimeout", "10000");
+			System.setProperty("sun.net.client.defaultReadTimeout", "10000");
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			frame.setMinimumSize(new Dimension(600, 500));
+			frame.setMinimumSize(new Dimension(800, 500));
 			frame.setVisible(true);
 
 			SPListView listView = SPListView.getInstance();

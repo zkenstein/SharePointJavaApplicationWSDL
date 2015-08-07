@@ -14,8 +14,12 @@ import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.w3c.dom.NodeList;
+
 /**
- * This class is used to show all of the items associated with a particular list/library.
+ * This class is used to show all of the items associated with a particular
+ * list/library.
+ * 
  * @author allarj3
  *
  */
@@ -33,6 +37,7 @@ public class SPItemView extends SPBaseView {
 
 	/**
 	 * This returns the itemView's static instance
+	 * 
 	 * @return
 	 */
 	public static SPItemView getInstance() {
@@ -83,6 +88,7 @@ public class SPItemView extends SPBaseView {
 
 	/**
 	 * Gets the list of item paths currently selected
+	 * 
 	 * @return the list of string paths
 	 */
 	public List<String> getCurrentItemPaths() {
@@ -98,7 +104,9 @@ public class SPItemView extends SPBaseView {
 
 	/**
 	 * Gets the path string from a certain row
-	 * @param rowIndex - the row to ascertain the path from
+	 * 
+	 * @param rowIndex
+	 *            - the row to ascertain the path from
 	 * @return the path as a string
 	 */
 	private String getPathFromRow(int rowIndex) {
@@ -109,7 +117,7 @@ public class SPItemView extends SPBaseView {
 		String currentSiteName = siteUrlParts[siteUrlParts.length - 1];
 		for (int col = 0; col < columns; col++) {
 			Object o = table.getValueAt(rowIndex, col);
-			if (table.getColumnName(col).equalsIgnoreCase("FileRef")) {
+			if (table.getColumnName(col).equalsIgnoreCase("FileRef") || table.getColumnName(col).equalsIgnoreCase("WebRelativeUrl")) {
 				String cellValue = o.toString();
 				cellValue = cellValue.replaceAll(".*;#", "");
 				cellValue = cellValue.replaceAll(".*" + currentSiteName + "/", "");
@@ -121,8 +129,11 @@ public class SPItemView extends SPBaseView {
 
 	/**
 	 * This used to update the item display with new items.
-	 * @param items - the new items to display.
-	 * @param listName - the list of the current items.
+	 * 
+	 * @param items
+	 *            - the new items to display.
+	 * @param listName
+	 *            - the list of the current items.
 	 * @return true if the operation was successful.
 	 */
 	public boolean UpdateTable(List<Object> items, String listName) {
@@ -180,8 +191,98 @@ public class SPItemView extends SPBaseView {
 	}
 
 	/**
+	 * This used to update the item display with new items.
+	 * 
+	 * @param items
+	 *            - the new items to display.
+	 * @param listName
+	 *            - the list of the current items.
+	 * @return true if the operation was successful.
+	 */
+	public boolean UpdateTableWithSearch(NodeList files) {
+		mainController.setFilesDownloadable(false);
+		boolean returnResult = true;
+		String[] columnNames = null;
+		if (files != null) {
+			NodeList firstFilesElements = files.item(0).getChildNodes();
+			int count = 0;
+			for (int i = 0; i < firstFilesElements.getLength(); i++) {
+				if (!firstFilesElements.item(i).getNodeName().contains("#text")) {
+					count++;
+				}
+			}
+			columnNames = new String[count];
+			count = 0;
+			for (int i = 0; i < firstFilesElements.getLength(); i++) {
+				if (!firstFilesElements.item(i).getNodeName().contains("#text")) {
+					columnNames[count++] = firstFilesElements.item(i).getNodeName();
+				}
+			}
+		}
+
+		Object[][] data = null;
+		if (columnNames != null) {
+			data = new Object[files.getLength()][columnNames.length];
+
+			NodeList firstFilesElements = files.item(0).getChildNodes();
+			for (int i = 0; i < files.getLength(); i++) {
+				int count = 0;
+				for (int j = 0; j < firstFilesElements.getLength(); j++) {
+
+					if (!files.item(i).getChildNodes().item(j).getNodeName().contains("#text")) {
+						data[i][count++] = files.item(i).getChildNodes().item(j).getTextContent();
+					}
+				}
+			}
+		}
+
+		if (data != null && columnNames != null) {
+			table = new JTable(data, columnNames) {
+
+				private static final long serialVersionUID = -4122451180044627689L;
+
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+			List<String> columns = Arrays.asList(columnNames);
+			int indexOfName = columns.indexOf("Name");
+			if (indexOfName > -1) {
+				table.moveColumn(indexOfName, 0);
+				table.getColumnModel().getColumn(0).setMinWidth(150);
+			}
+			table.setBackground(Color.white);
+			table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					if (!e.getValueIsAdjusting()) {
+						mainController.clearMessages();
+						if (getCurrentItemPaths().size() > 0) {
+							mainController.setFilesDownloadable(true);
+						} else {
+							mainController.setFilesDownloadable(false);
+						}
+					}
+				}
+			});
+			scroll.setViewportView(table);
+			errorLabel.setVisible(false);
+		} else {
+			System.err.println("Data didn't read.");
+			setErrorMessage("There are no items to view.");
+			returnResult = false;
+		}
+		this.revalidate();
+		return returnResult;
+	}
+
+	/**
 	 * Sets the error message for the display
-	 * @param message the message to show
+	 * 
+	 * @param message
+	 *            the message to show
 	 */
 	public void setErrorMessage(String message) {
 		System.out.println("Displaying error message: " + message);
@@ -193,8 +294,11 @@ public class SPItemView extends SPBaseView {
 	}
 
 	/**
-	 * This is used to display the loading gif during operations by the web controller.
-	 * @param willDisplay - true to show the loading gif, false to hide it.
+	 * This is used to display the loading gif during operations by the web
+	 * controller.
+	 * 
+	 * @param willDisplay
+	 *            - true to show the loading gif, false to hide it.
 	 */
 	private void displayLoading(boolean willDisplay) {
 		scroll.setVisible(!willDisplay);

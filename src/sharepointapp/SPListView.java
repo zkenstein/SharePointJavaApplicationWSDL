@@ -11,6 +11,7 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  * This class is used to present the lists associated with a SharePoint site.
+ * 
  * @author allarj3
  *
  */
@@ -21,9 +22,11 @@ public class SPListView extends SPBaseView {
 	private JList<String> emptyList = new JList<String>(new String[] { "No Lists Found" });
 
 	private static SPListView instance = new SPListView();
+	private JList<String> listView;
 
 	/**
 	 * Returns the static instance of this class.
+	 * 
 	 * @return
 	 */
 	public static SPListView getInstance() {
@@ -58,8 +61,12 @@ public class SPListView extends SPBaseView {
 
 	/**
 	 * Used to display all of the lists associated with a site.
-	 * @param allLists - the lists to display.
-	 * @param listToLoad - the list to select for a default, if null the first will be selected.
+	 * 
+	 * @param allLists
+	 *            - the lists to display.
+	 * @param listToLoad
+	 *            - the list to select for a default, if null the first will be
+	 *            selected.
 	 */
 	public void displayLists(List<String> allLists, String listToLoad) {
 		lists = allLists;
@@ -76,26 +83,40 @@ public class SPListView extends SPBaseView {
 		}
 
 		mainController.updateItems();
+		lists.add("Search");
 
-		JList<String> listView = new JList<String>(lists.toArray(new String[lists.size()]));
-		listView.setSelectedValue(listToLoad, true);
+		listView = new JList<String>(lists.toArray(new String[lists.size()]));
+		setSelected(listToLoad);
 		ListSelectionModel listSelectionModel = listView.getSelectionModel();
 		listSelectionModel.addListSelectionListener(new SPListSelectionListener(listView));
 
 		scroll.setViewportView(listView);
 	}
-	
+
+	public void setSelected(String listToSelect) {
+		if (listToSelect == null) {
+			listView.setSelectedValue("Search", false);
+		} else {
+			listView.setSelectedValue(listToSelect, true);
+		}
+	}
+
 	/**
-	 * This class is used to dictate what happens when the list items are selected.
+	 * This class is used to dictate what happens when the list items are
+	 * selected.
+	 * 
 	 * @author Joshua
 	 *
 	 */
 	private class SPListSelectionListener implements ListSelectionListener {
 		JList<String> listView;
-		
+
 		/**
-		 * This class is used to dictate what happens when the list items are selected.
-		 * @param listView - the lists to select from.
+		 * This class is used to dictate what happens when the list items are
+		 * selected.
+		 * 
+		 * @param listView
+		 *            - the lists to select from.
 		 */
 		public SPListSelectionListener(JList<String> listView) {
 			this.listView = listView;
