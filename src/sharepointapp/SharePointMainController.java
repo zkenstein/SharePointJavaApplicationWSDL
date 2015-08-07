@@ -146,6 +146,9 @@ public class SharePointMainController {
 		if (fileElements != null && fileElements.getLength() > 0) {
 			itemView.UpdateTableWithSearch(fileElements);
 		}
+		else{
+			displayMessages(null, "No Files Found", false);
+		}
 	}
 
 	/**

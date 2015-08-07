@@ -83,7 +83,6 @@ public class SPListView extends SPBaseView {
 		}
 
 		mainController.updateItems();
-		lists.add("Search");
 
 		listView = new JList<String>(lists.toArray(new String[lists.size()]));
 		setSelected(listToLoad);

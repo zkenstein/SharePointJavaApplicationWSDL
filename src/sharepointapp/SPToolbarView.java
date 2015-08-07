@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -17,10 +19,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * This class is responsible for showing the toolbar buttons, messages, and url
@@ -181,6 +179,13 @@ public class SPToolbarView extends SPBaseView {
 		}));
 
 		searchButton.addActionListener(new SPSearchActionListener());
+		search.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					searchButton.doClick();
+				}
+			}
+		});
 	}
 
 	/**
