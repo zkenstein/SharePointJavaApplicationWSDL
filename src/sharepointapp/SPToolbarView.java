@@ -28,7 +28,7 @@ import javax.swing.SpringLayout;
  *
  */
 public class SPToolbarView extends SPBaseView {
-	private static final int BUTTON_SIZE = 130;
+	private static final int BUTTON_SIZE = 110;
 	private static final long serialVersionUID = -7024445311746875546L;
 	private static final String DEFAULT_DOWNLOAD_LOCATION = ".";
 	private static SPToolbarView instance = new SPToolbarView();
@@ -53,6 +53,7 @@ public class SPToolbarView extends SPBaseView {
 	public static SPToolbarView getInstance() {
 		return instance;
 	}
+	
 
 	/**
 	 * Creates the toolbar view that can be added to the main frame.
@@ -83,15 +84,19 @@ public class SPToolbarView extends SPBaseView {
 		urlSelection.setEditable(true);
 		this.add(urlSelection);
 
-		download = new JButton("Download File(s)");
+		download = new JButton("Download");
 		download.setEnabled(false);
-		upload = new JButton("Upload File(s)");
+		upload = new JButton("Upload");
 		upload.setEnabled(false);
 
-		searchButton = new JButton("Search Web");
+		searchButton = new JButton("Search Site");
 		searchButton.setEnabled(false);
 		search = new JTextField("");
+		
+		
+		
 		message = new JLabel("");
+		
 		this.add(download);
 		this.add(upload);
 		this.add(message);
@@ -145,14 +150,14 @@ public class SPToolbarView extends SPBaseView {
 		layout.putConstraint(SpringLayout.EAST, upload, -5, SpringLayout.WEST, download);
 		layout.putConstraint(SpringLayout.SOUTH, upload, -5, SpringLayout.SOUTH, this);
 
-		layout.putConstraint(SpringLayout.WEST, searchButton, -BUTTON_SIZE - 5, SpringLayout.WEST, upload);
+		layout.putConstraint(SpringLayout.WEST, searchButton, -BUTTON_SIZE - 25, SpringLayout.WEST, upload);
 		layout.putConstraint(SpringLayout.NORTH, searchButton, 5, SpringLayout.SOUTH, urlSelection);
-		layout.putConstraint(SpringLayout.EAST, searchButton, -5, SpringLayout.WEST, upload);
+		layout.putConstraint(SpringLayout.EAST, searchButton, -25, SpringLayout.WEST, upload);
 		layout.putConstraint(SpringLayout.SOUTH, searchButton, -5, SpringLayout.SOUTH, this);
 
 		layout.putConstraint(SpringLayout.WEST, search, -BUTTON_SIZE - 5, SpringLayout.WEST, searchButton);
 		layout.putConstraint(SpringLayout.NORTH, search, 5, SpringLayout.SOUTH, urlSelection);
-		layout.putConstraint(SpringLayout.EAST, search, -5, SpringLayout.WEST, searchButton);
+		layout.putConstraint(SpringLayout.EAST, search, 0, SpringLayout.WEST, searchButton);
 		layout.putConstraint(SpringLayout.SOUTH, search, -5, SpringLayout.SOUTH, this);
 
 		layout.putConstraint(SpringLayout.WEST, message, 5, SpringLayout.WEST, this);
