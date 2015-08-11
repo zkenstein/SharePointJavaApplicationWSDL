@@ -1,4 +1,0 @@
-DOWNLOAD_LOCATION;#C:\Users\allarj3\Desktop\SPJava
-DOMAIN;#CORP
-URLS;#New URL---https://sharepointfoundation.sites.emc.com/EMCITSharePoint/InternTestSite/---http://usitisusel3661c---https://sharepointfoundation.sites.emc.com/EMCITSharePoint/InternTestSite---https://engineering.sites.emc.com---- https://engineering.sites.emc.com/departments/VNX/inmarketengineering/IMEengopsenablement/---- https://engineering.sites.emc.com/departments/VNX/inmarketengineering---- https://engineering.sites.emc.com/departments/VNX/---- https://engineering.sites.emc.com/departments/---- https://engineering.sites.emc.com/---https://engineering.sites.emc.com/---https://engineering.sites.emc.com/departments/VNX/inmarketengineering/IMEengopsenablement/---https://engineering.sites.emc.com/departments/VNX/inmarketengineering/IMEengopsenablement/IME%20Test%20Management%20Systems
-USERNAME;#allarj3

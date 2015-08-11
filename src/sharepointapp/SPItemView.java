@@ -1,6 +1,8 @@
 package sharepointapp;
 
 import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +15,7 @@ import javax.swing.JTable;
 import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumnModel;
 
 import org.w3c.dom.NodeList;
 
@@ -24,6 +27,8 @@ import org.w3c.dom.NodeList;
  *
  */
 public class SPItemView extends SPBaseView {
+
+	private static final String HIDDEN_COLUMNS_KEY = "Hidden Columns in Item View";
 
 	private static final long serialVersionUID = 9001415591452156169L;
 
@@ -49,6 +54,11 @@ public class SPItemView extends SPBaseView {
 	 */
 	private SPItemView() {
 
+		prefs.registerNoteForKey(HIDDEN_COLUMNS_KEY, "Hide columns by holding Ctrl and double clicking on the headers of the item view table. Remove them here to unhide them.");
+		if(!prefs.keyExists(HIDDEN_COLUMNS_KEY)){
+			prefs.add(HIDDEN_COLUMNS_KEY, "Example_Hidden_Column");
+		}
+		
 		this.add(scroll);
 		scroll.setBackground(SPUtilities.getLightThemeColor());
 		scroll.getViewport().setBackground(SPUtilities.getLightThemeColor());
@@ -117,7 +127,8 @@ public class SPItemView extends SPBaseView {
 		String currentSiteName = siteUrlParts[siteUrlParts.length - 1];
 		for (int col = 0; col < columns; col++) {
 			Object o = table.getValueAt(rowIndex, col);
-			if (table.getColumnName(col).equalsIgnoreCase("FileRef") || table.getColumnName(col).equalsIgnoreCase("WebRelativeUrl")) {
+			if (table.getColumnName(col).equalsIgnoreCase("FileRef")
+					|| table.getColumnName(col).equalsIgnoreCase("WebUrl")) {
 				String cellValue = o.toString();
 				cellValue = cellValue.replaceAll(".*;#", "");
 				cellValue = cellValue.replaceAll(".*" + currentSiteName + "/", "");
@@ -179,6 +190,35 @@ public class SPItemView extends SPBaseView {
 					}
 				}
 			});
+			table.getTableHeader().addMouseListener(new MouseAdapter() {
+
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() > 1 && e.isControlDown()) {
+						TableColumnModel colModel = table.getColumnModel();
+						int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
+						System.out.println(columnModelIndex + " - " + e.getSource());
+						prefs.add(HIDDEN_COLUMNS_KEY, colModel.getColumn(columnModelIndex).getHeaderValue().toString());
+						prefs.flush();
+						// colModel.removeColumn(colModel.getColumn(columnModelIndex));
+
+						colModel.getColumn(columnModelIndex).setMinWidth(0);
+						colModel.getColumn(columnModelIndex).setMaxWidth(0);
+					}
+				}
+			});
+
+			TableColumnModel colModel = table.getColumnModel();
+			for (int i = 0; i < table.getColumnCount(); i++) {
+
+				int columnModelIndex = i;
+				if (prefs.getAll(HIDDEN_COLUMNS_KEY).contains(colModel.getColumn(columnModelIndex).getHeaderValue().toString())) {
+					// colModel.removeColumn(colModel.getColumn(columnModelIndex));
+
+					colModel.getColumn(columnModelIndex).setMinWidth(0);
+					colModel.getColumn(columnModelIndex).setMaxWidth(0);
+				}
+			}
 			scroll.setViewportView(table);
 			errorLabel.setVisible(false);
 		} else {
@@ -269,6 +309,36 @@ public class SPItemView extends SPBaseView {
 			});
 			scroll.setViewportView(table);
 			errorLabel.setVisible(false);
+
+			table.getTableHeader().addMouseListener(new MouseAdapter() {
+
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() > 1 && e.isControlDown()) {
+						TableColumnModel colModel = table.getColumnModel();
+						int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
+						System.out.println(columnModelIndex + " - " + e.getSource());
+						prefs.add(HIDDEN_COLUMNS_KEY, colModel.getColumn(columnModelIndex).getHeaderValue().toString());
+						// colModel.removeColumn(colModel.getColumn(columnModelIndex));
+
+						colModel.getColumn(columnModelIndex).setMinWidth(0);
+						colModel.getColumn(columnModelIndex).setMaxWidth(0);
+					}
+				}
+			});
+			
+
+			TableColumnModel colModel = table.getColumnModel();
+			for (int i = 0; i < table.getColumnCount(); i++) {
+
+				int columnModelIndex = i;
+				if (prefs.getAll(HIDDEN_COLUMNS_KEY).contains(colModel.getColumn(columnModelIndex).getHeaderValue().toString())) {
+					// colModel.removeColumn(colModel.getColumn(columnModelIndex));
+
+					colModel.getColumn(columnModelIndex).setMinWidth(0);
+					colModel.getColumn(columnModelIndex).setMaxWidth(0);
+				}
+			}
 		} else {
 			System.err.println("Data didn't read.");
 			setErrorMessage("There are no items to view.");

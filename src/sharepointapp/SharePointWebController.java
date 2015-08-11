@@ -3,6 +3,7 @@ package sharepointapp;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.Authenticator;
 import java.net.URI;
@@ -31,6 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import com.microsoft.schemas.sharepoint.soap.Copy;
 import com.microsoft.schemas.sharepoint.soap.CopyResultCollection;
@@ -43,6 +45,8 @@ import com.microsoft.schemas.sharepoint.soap.GetListItemsResponse;
 import com.microsoft.schemas.sharepoint.soap.Lists;
 import com.microsoft.schemas.sharepoint.soap.ListsSoap;
 import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
+
+
 
 /**
  * This class is used to connect to a SharePoint site and for reading its data.
@@ -268,7 +272,9 @@ public class SharePointWebController {
 	 * @throws Exception
 	 */
 	public boolean downloadFile(String filepath, String testUrl) throws Exception {
-		testUrl = BasesharepointUrl + testUrl;
+		if(!testUrl.startsWith("http")){
+			testUrl = BasesharepointUrl + testUrl;
+		}
 		testUrl = testUrl.replace(" ", "%20");
 		Holder<Long> result = new Holder<Long>();
 		Holder<FieldInformationCollection> fields = new Holder<FieldInformationCollection>();
@@ -393,7 +399,14 @@ public class SharePointWebController {
 		String viewName = "";
 		GetListItems.ViewFields viewFields = null;
 		GetListItems.Query query = null;
-		GetListItems.QueryOptions queryOptions = null;
+		GetListItems.QueryOptions queryOptions = new GetListItems.QueryOptions();
+		
+				DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		InputSource is = new InputSource();
+		is.setCharacterStream(new StringReader("<QueryOptions><ViewAttributes Scope=\"RecursiveAll\"/></QueryOptions>"));
+
+		Document doc = db.parse(is);
+		queryOptions.getContent().add(doc.getDocumentElement());
 		String webID = "";
 
 		// Calling the List Web Service
@@ -403,6 +416,8 @@ public class SharePointWebController {
 		return result.getContent();
 
 	}
+	
+	
 
 	/**
 	 * Gets the lists from the contents of a Soap Response!

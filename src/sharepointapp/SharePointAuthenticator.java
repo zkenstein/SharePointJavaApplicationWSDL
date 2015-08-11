@@ -28,9 +28,9 @@ import javax.swing.WindowConstants;
  */
 public class SharePointAuthenticator extends Authenticator {
 
-	private static final String DOMAIN_KEY = "DOMAIN";
+	private static final String DOMAIN_KEY = "Last Domain";
 
-	private static final String USERNAME_KEY = "USERNAME";
+	private static final String USERNAME_KEY = "Last Username";
 
 	private boolean exited;
 
@@ -87,7 +87,6 @@ public class SharePointAuthenticator extends Authenticator {
 
 		@Override
 		public void run() {
-			
 			frame = new JFrame("SharePoint in Java - Authenticate");
 			frame.setLocationRelativeTo(MainView.frame);
 
@@ -216,6 +215,8 @@ public class SharePointAuthenticator extends Authenticator {
 		super();
 		prefs.registerSingleValueOnlyKey(DOMAIN_KEY);
 		prefs.registerSingleValueOnlyKey(USERNAME_KEY);
+		prefs.registerNoteForKey(USERNAME_KEY, "This will fill in the Authentication form automatically, This will be changed by using a different username.");
+		prefs.registerNoteForKey(DOMAIN_KEY, "This will fill in the Authentication form automatically, This will be changed by using a different domain.");
 	}
 
 	/*

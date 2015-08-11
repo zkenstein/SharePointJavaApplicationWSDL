@@ -32,9 +32,8 @@ public class SPToolbarView extends SPBaseView {
 	private static final long serialVersionUID = -7024445311746875546L;
 	private static final String DEFAULT_DOWNLOAD_LOCATION = ".";
 	private static SPToolbarView instance = new SPToolbarView();
-	private static final String URL_LIST_KEY = "URLS";
-	private static final String DOWNLOAD_LOCATION_KEY = "DOWNLOAD_LOCATION";
-	private SPPreferences prefs = SPPreferences.GetPreferences();
+	private static final String URL_LIST_KEY = "Sharepoint URL History";
+	private static final String DOWNLOAD_LOCATION_KEY = "Last Download Location";
 	private JButton download;
 	private JButton upload;
 	private JLabel message;
@@ -59,6 +58,9 @@ public class SPToolbarView extends SPBaseView {
 	 * Creates the toolbar view that can be added to the main frame.
 	 */
 	private SPToolbarView() {
+
+		prefs.registerNoteForKey(DOWNLOAD_LOCATION_KEY, "This is automatically changed when using the Download Popout.");
+		prefs.registerNoteForKey(URL_LIST_KEY, "These are what populate your URL drop down. They are automatically added. Delete them here to 'forget' them.");
 		prefs.registerSingleValueOnlyKey(DOWNLOAD_LOCATION_KEY);
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
@@ -381,6 +383,7 @@ public class SPToolbarView extends SPBaseView {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			search.setText("");
 			String currentList = mainController.getCurrentList();
 			webController.connectToUrl((String) urlSelection.getSelectedItem(), currentList);
 		}

@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class allows values to be stored during current and future runs of the program.
+ * This class allows values to be stored during current and future runs of the
+ * program.
+ * 
  * @author allarj3
  *
  */
@@ -22,12 +24,14 @@ public class SPPreferences {
 	private static final String VALUE_SEPARATOR = "---";
 	private static final String KEY_SEPARATOR = ";#";
 	private Map<String, ArrayList<String>> prefsMap = new HashMap<String, ArrayList<String>>();
-	private File prefsFile = new File("SPJavaPrefs.txt");
+	private File prefsFile = null;
 	static SPPreferences instance = new SPPreferences();
 	private List<String> singleValueKeys = new ArrayList<String>();
+	private Map<String, String> notes = new HashMap<String, String>();
 
 	/**
 	 * Returns the static instance of the preference manager
+	 * 
 	 * @return
 	 */
 	public static SPPreferences GetPreferences() {
@@ -38,8 +42,12 @@ public class SPPreferences {
 	 * Creates the preference manager object.
 	 */
 	private SPPreferences() {
+		
+		String userHomeDir = System.getProperty("user.home");
+		prefsFile = new File(userHomeDir + "/SPJavaFiles/SPJavaPrefs.txt");
 		try {
 			if (!prefsFile.exists()) {
+				prefsFile.getParentFile().mkdirs();
 				prefsFile.createNewFile();
 			} else {
 				readPrefsFile();
@@ -51,18 +59,25 @@ public class SPPreferences {
 
 	/**
 	 * Registers a key to only have one value.
-	 * @param key - the key to limit the value count of.
+	 * 
+	 * @param key
+	 *            - the key to limit the value count of.
 	 */
 	public void registerSingleValueOnlyKey(String key) {
 		if (prefsMap.containsKey(key) && prefsMap.get(key).size() > 1) {
 			put(key, prefsMap.get(key).get(0));
 		}
-		singleValueKeys.add(key);
+		
+		if (!singleValueKeys.contains(key)) {
+			singleValueKeys.add(key);
+		}
 	}
 
 	/**
 	 * Checks to see if the key is registered for only one object.
-	 * @param key - the key to check.
+	 * 
+	 * @param key
+	 *            - the key to check.
 	 * @return true if it is for single values only.
 	 */
 	public boolean isSingleValueOnlyKey(String key) {
@@ -87,7 +102,9 @@ public class SPPreferences {
 
 	/**
 	 * Reads the current line, processing the keys and values.
-	 * @param line - the line in the file to read.
+	 * 
+	 * @param line
+	 *            - the line in the file to read.
 	 */
 	private void processLine(String line) {
 		String[] args = line.split(KEY_SEPARATOR);
@@ -99,9 +116,13 @@ public class SPPreferences {
 	}
 
 	/**
-	 * Returns either the first value in the list of values, or the default value.
-	 * @param key - the key to find a value for.
-	 * @param defaultReturn - the value to return if there are no found values.
+	 * Returns either the first value in the list of values, or the default
+	 * value.
+	 * 
+	 * @param key
+	 *            - the key to find a value for.
+	 * @param defaultReturn
+	 *            - the value to return if there are no found values.
 	 * @return the string value or default string value.
 	 */
 	public String getFirstOrDefault(String key, String defaultReturn) {
@@ -113,21 +134,27 @@ public class SPPreferences {
 
 	/**
 	 * Returns all of the values for the given key.
-	 * @param key - the key to get the values of.
+	 * 
+	 * @param key
+	 *            - the key to get the values of.
 	 * @return the list of string values
 	 */
 	public List<String> getAll(String key) {
 		if (prefsMap.containsKey(key)) {
-			//return (List<String>) prefsMap.get(key).clone();
+			// return (List<String>) prefsMap.get(key).clone();
 			return new ArrayList<>(prefsMap.get(key));
 		}
 		return new ArrayList<String>();
 	}
 
 	/**
-	 * Puts the current value into the preference manager, overriding if there is already a value there.
-	 * @param key - the key to place the value with.
-	 * @param value - the value to store.
+	 * Puts the current value into the preference manager, overriding if there
+	 * is already a value there.
+	 * 
+	 * @param key
+	 *            - the key to place the value with.
+	 * @param value
+	 *            - the value to store.
 	 */
 	public void put(String key, String value) {
 		prefsMap.put(key, new ArrayList<String>());
@@ -135,22 +162,25 @@ public class SPPreferences {
 	}
 
 	/**
-	 * Puts the current value into the preference manager, adding it alongside any values that may be there already.
-	 * @param key - the key to place the value with.
-	 * @param value - the value to store.
+	 * Puts the current value into the preference manager, adding it alongside
+	 * any values that may be there already.
+	 * 
+	 * @param key
+	 *            - the key to place the value with.
+	 * @param value
+	 *            - the value to store.
 	 * @return true if the item is added, false otherwise.
 	 */
 	public boolean add(String key, String value) {
-		if(prefsMap.containsKey(key) && !prefsMap.get(key).contains(value)){
-			
-			if(isSingleValueOnlyKey(key)){
+		if (prefsMap.containsKey(key) && !prefsMap.get(key).contains(value)) {
+
+			if (isSingleValueOnlyKey(key)) {
 				put(key, value);
 			} else {
 				prefsMap.get(key).add(value);
 			}
 			return true;
-		}
-		else if(!prefsMap.containsKey(key)){
+		} else if (!prefsMap.containsKey(key)) {
 			put(key, value);
 			return true;
 		}
@@ -159,8 +189,11 @@ public class SPPreferences {
 
 	/**
 	 * Puts a list of values into the prefs manager
-	 * @param key - the key to store the values with.
-	 * @param values - the values to store.
+	 * 
+	 * @param key
+	 *            - the key to store the values with.
+	 * @param values
+	 *            - the values to store.
 	 */
 	public void put(String key, List<String> values) {
 		if (isSingleValueOnlyKey(key) && values.size() > 1) {
@@ -178,11 +211,25 @@ public class SPPreferences {
 
 	/**
 	 * Checks to see if the given key is in the preference manager
-	 * @param key - the key to check.
-	 * @return true if the key is contained in the preference manager, false otherwise.
+	 * 
+	 * @param key
+	 *            - the key to check.
+	 * @return true if the key is contained in the preference manager, false
+	 *         otherwise.
 	 */
 	public boolean keyExists(String key) {
 		return prefsMap.containsKey(key);
+	}
+
+	public void registerNoteForKey(String key, String note) {
+		notes.put(key, note);
+	}
+
+	public String getNote(String key) {
+		if (notes.containsKey(key)) {
+			return notes.get(key);
+		}
+		return "";
 	}
 
 	/**

@@ -21,4 +21,6 @@ public abstract class SPBaseView extends JPanel {
 	 * The web controller for the views. Use this to communicate to and from the SharePoint Servers.
 	 */
 	protected SharePointWebController webController = SharePointWebController.getInstance();
+
+	protected SPPreferences prefs = SPPreferences.GetPreferences();
 }

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ public class SPPreferencesWindow {
 			pane.add(scroll);
 
 			List<String> keys = prefs.getKeys();
+			java.util.Collections.sort(keys);
 			for (int i = 0; i < keys.size(); i++) {
 				PrefElement element = new PrefElement(keys.get(i));
 				preferenceElements.add(element);
@@ -144,17 +146,17 @@ public class SPPreferencesWindow {
 		 */
 		private int SetSpringLayout(PrefElement element) {
 			
-			int boxSize = 150;
+			int boxSize = 200;
 			if(prefs.isSingleValueOnlyKey(element.key)){
-				boxSize = 50;
+				boxSize = 100;
 			}
 
 			paneLayout.putConstraint(SpringLayout.WEST, element, 25, SpringLayout.WEST, contentPanel);
 			if (previous == contentPanel) {
-				paneLayout.putConstraint(SpringLayout.NORTH, element, 5, SpringLayout.NORTH, previous);
+				paneLayout.putConstraint(SpringLayout.NORTH, element, 15, SpringLayout.NORTH, previous);
 				paneLayout.putConstraint(SpringLayout.SOUTH, element, boxSize, SpringLayout.NORTH, previous);
 			} else {
-				paneLayout.putConstraint(SpringLayout.NORTH, element, 5, SpringLayout.SOUTH, previous);
+				paneLayout.putConstraint(SpringLayout.NORTH, element, 15, SpringLayout.SOUTH, previous);
 				paneLayout.putConstraint(SpringLayout.SOUTH, element, boxSize, SpringLayout.SOUTH, previous);
 			}
 			paneLayout.putConstraint(SpringLayout.EAST, element, -25, SpringLayout.EAST, contentPanel);
@@ -200,9 +202,17 @@ public class SPPreferencesWindow {
 			SpringLayout layout = new SpringLayout();
 			this.setLayout(layout);
 
-			table = new JTable(tableData, new String[] { key });
+			String noteAsterisk = "";
+			if(!prefs.getNote(key).isEmpty()){
+				noteAsterisk = "*";
+			}
+			
+			table = new JTable(tableData, new String[] { key + noteAsterisk});
 			table.setBackground(Color.white);
-
+			table.getTableHeader().setBackground(SPUtilities.getDarkThemeColor());
+			table.getTableHeader().setForeground(Color.white);
+			table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 16));
+			
 			JScrollPane scroll = new JScrollPane(table);
 			scroll.setBackground(Color.white);
 			scroll.getViewport().setBackground(Color.white);
@@ -210,7 +220,17 @@ public class SPPreferencesWindow {
 			layout.putConstraint(SpringLayout.WEST, scroll, 0, SpringLayout.WEST, this);
 			layout.putConstraint(SpringLayout.NORTH, scroll, 0, SpringLayout.NORTH, this);
 			layout.putConstraint(SpringLayout.EAST, scroll, 0, SpringLayout.EAST, this);
-			layout.putConstraint(SpringLayout.SOUTH, scroll, 0, SpringLayout.SOUTH, this);
+			layout.putConstraint(SpringLayout.SOUTH, scroll, -40, SpringLayout.SOUTH, this);
+			
+			JLabel noteLabel = new JLabel("<html>" + noteAsterisk + prefs.getNote(key) + "</html>");
+			noteLabel.setBackground(SPUtilities.getLightThemeColor());
+			this.add(noteLabel);
+			layout.putConstraint(SpringLayout.WEST, noteLabel, 0, SpringLayout.WEST, this);
+			layout.putConstraint(SpringLayout.NORTH, noteLabel, -40, SpringLayout.SOUTH, this);
+			layout.putConstraint(SpringLayout.EAST, noteLabel, 0, SpringLayout.EAST, this);
+			layout.putConstraint(SpringLayout.SOUTH, noteLabel, 0, SpringLayout.SOUTH, this);
+			
+			this.setBackground(SPUtilities.getLightThemeColor());
 		}
 	}
 
