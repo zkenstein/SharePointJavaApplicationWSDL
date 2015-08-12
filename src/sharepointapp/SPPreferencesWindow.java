@@ -107,6 +107,7 @@ public class SPPreferencesWindow {
 			JLabel infoDisplay = new JLabel("Remember to press 'Enter' when finished writing in a cell!");
 			contentPanel.add(infoDisplay);
 			infoDisplay.setHorizontalAlignment(SwingConstants.CENTER);
+			infoDisplay.setForeground(SPUtilities.getLightThemeFontColor());
 
 			paneLayout.putConstraint(SpringLayout.WEST, infoDisplay, 10, SpringLayout.WEST, contentPanel);
 			paneLayout.putConstraint(SpringLayout.NORTH, infoDisplay, -30, SpringLayout.NORTH, saveButton);
@@ -210,7 +211,7 @@ public class SPPreferencesWindow {
 			table = new JTable(tableData, new String[] { key + noteAsterisk});
 			table.setBackground(Color.white);
 			table.getTableHeader().setBackground(SPUtilities.getDarkThemeColor());
-			table.getTableHeader().setForeground(Color.white);
+			table.getTableHeader().setForeground(SPUtilities.getDarkThemeFontColor());
 			table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 16));
 			
 			JScrollPane scroll = new JScrollPane(table);
@@ -224,6 +225,7 @@ public class SPPreferencesWindow {
 			
 			JLabel noteLabel = new JLabel("<html>" + noteAsterisk + prefs.getNote(key) + "</html>");
 			noteLabel.setBackground(SPUtilities.getLightThemeColor());
+			noteLabel.setForeground(SPUtilities.getLightThemeFontColor());
 			this.add(noteLabel);
 			layout.putConstraint(SpringLayout.WEST, noteLabel, 0, SpringLayout.WEST, this);
 			layout.putConstraint(SpringLayout.NORTH, noteLabel, -40, SpringLayout.SOUTH, this);

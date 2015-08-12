@@ -34,8 +34,9 @@ public class MainView {
 			System.setProperty("javax.net.ssl.trustStore", "./foundationSites");
 			System.setProperty("sun.net.client.defaultConnectTimeout", "10000");
 			System.setProperty("sun.net.client.defaultReadTimeout", "10000");
+
 			frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			frame.setMinimumSize(new Dimension(800, 500));
+			frame.setMinimumSize(new Dimension(700, 500));
 			frame.setVisible(true);
 
 			SPListView listView = SPListView.getInstance();
@@ -52,6 +53,7 @@ public class MainView {
 			pane.add(toolbar);
 			pane.add(listView);
 			pane.add(itemView);
+			pane.setBackground(SPUtilities.getDarkThemeColor());
 
 			paneLayout.putConstraint(SpringLayout.WEST, toolbar, 0, SpringLayout.WEST, pane);
 			paneLayout.putConstraint(SpringLayout.NORTH, toolbar, 0, SpringLayout.NORTH, pane);
@@ -65,7 +67,7 @@ public class MainView {
 
 			paneLayout.putConstraint(SpringLayout.WEST, itemView, 0, SpringLayout.EAST, listView);
 			paneLayout.putConstraint(SpringLayout.NORTH, itemView, 0, SpringLayout.SOUTH, toolbar);
-			paneLayout.putConstraint(SpringLayout.EAST, itemView, 0, SpringLayout.EAST, pane);
+			paneLayout.putConstraint(SpringLayout.EAST, itemView, -5, SpringLayout.EAST, pane);
 			paneLayout.putConstraint(SpringLayout.SOUTH, itemView, 0, SpringLayout.SOUTH, pane);
 		}
 	}

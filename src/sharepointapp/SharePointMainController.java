@@ -21,6 +21,7 @@ public class SharePointMainController {
 	private SPItemView itemView;
 	private String currentListName = "";
 	private GetItemsThread currentItemsThread = null;
+	public boolean messageLock;
 
 	/**
 	 * Create a new SharePointMainController. This is empty, only because the constructor needed to be private.
@@ -67,12 +68,15 @@ public class SharePointMainController {
 	 */
 	public void finishedConnectingToSite(List<String> allLists, String listToLoad) {
 		listView.displayLists(allLists, listToLoad);
+
+		MainView.frame.requestFocus();
 	}
 
 	/**
 	 * Updates the list of items to view.
+	 * @param isRefresh 
 	 */
-	public void updateItems() {
+	public void updateItems(boolean isRefresh) {
 		toolbar.clearMessageText();
 		itemView.startedLoadingItems();
 		toolbar.enableUploadButton(false, currentListName);
@@ -80,7 +84,7 @@ public class SharePointMainController {
 		if (currentItemsThread != null && currentItemsThread.isAlive()) {
 			currentItemsThread.interrupt();
 		}
-		currentItemsThread = new GetItemsThread(currentListName);
+		currentItemsThread = new GetItemsThread(currentListName, isRefresh);
 		currentItemsThread.start();
 	}
 
@@ -93,17 +97,18 @@ public class SharePointMainController {
 	private class GetItemsThread extends Thread {
 
 		String listName;
+		boolean isRefresh = false;
 
-		public GetItemsThread(String listName) {
+		public GetItemsThread(String listName, boolean isRefresh) {
 			this.listName = listName;
+			this.isRefresh = isRefresh;
 		}
 
 		@Override
 		public void run() {
-			List<Object> items = null;
 			try {
-				items = webController.getAllListItems(listName);
-				if (itemView.UpdateTable(items, listName)) {
+				SPFolder folder = webController.getFolder(listName);
+				if (itemView.UpdateTable(folder, listName, isRefresh)) {
 					itemView.finishedLoadingItems();
 					// toolbar.enableUploadButton(true, listName);
 					toolbar.finishedConnection(listName);
@@ -117,6 +122,10 @@ public class SharePointMainController {
 		}
 	}
 	
+	/**
+	 * Tells the components whether or not to display loading signs
+	 * @param willDisplay - true if loading signs are wanted.
+	 */
 	public void displayLoading(boolean willDisplay){
 		if(willDisplay){
 			itemView.startedLoadingItems();
@@ -126,6 +135,10 @@ public class SharePointMainController {
 		}
 	}
 	
+	/**
+	 * Configures the view for loading a search result.
+	 * @param search - the string to search SharePoint for.
+	 */
 	public void getSearch(String search){
 		Document doc = webController.getSearch(search);
 		if(doc == null){
@@ -159,7 +172,8 @@ public class SharePointMainController {
 	 */
 	public void displayMessages(String toolbarMessage, String itemViewMessage, boolean isSuccessful) {
 		if (toolbarMessage != null) {
-			toolbar.setMessageText(toolbarMessage, isSuccessful);
+			//toolbar.setMessageText(toolbarMessage, isSuccessful);
+			listView.setMessageText(toolbarMessage, isSuccessful);
 		}
 		if (itemViewMessage != null) {
 			itemView.setErrorMessage(itemViewMessage);
@@ -171,6 +185,7 @@ public class SharePointMainController {
 	 */
 	public void clearMessages() {
 		toolbar.clearMessageText();
+		listView.clearMessageText();
 	}
 
 	/**
@@ -178,7 +193,6 @@ public class SharePointMainController {
 	 * @return The list of items paths in string form
 	 */
 	public List<String> getCurrentItemPaths() {
-		// TODO Auto-generated method stub
 		return itemView.getCurrentItemPaths();
 	}
 
@@ -196,6 +210,14 @@ public class SharePointMainController {
 	 */
 	public String getCurrentList() {
 		return currentListName;
+	}
+	
+	/**
+	 * Returns the current list's name
+	 * @return the list
+	 */
+	public String getCurrentFolderPath() {
+		return itemView.getCurrentFolderPath();
 	}
 
 	/**

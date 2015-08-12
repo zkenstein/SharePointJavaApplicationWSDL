@@ -19,6 +19,8 @@ import javax.swing.table.TableColumnModel;
 
 import org.w3c.dom.NodeList;
 
+import sharepointapp.SPItem.ItemType;
+
 /**
  * This class is used to show all of the items associated with a particular
  * list/library.
@@ -28,6 +30,65 @@ import org.w3c.dom.NodeList;
  */
 public class SPItemView extends SPBaseView {
 
+	private final class HeaderMouseListener extends MouseAdapter {
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() > 1 && e.isControlDown()) {
+				TableColumnModel colModel = table.getColumnModel();
+				int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
+				System.out.println(columnModelIndex + " - " + e.getSource());
+				prefs.add(HIDDEN_COLUMNS_KEY, colModel.getColumn(columnModelIndex).getHeaderValue().toString());
+				prefs.flush();
+				// colModel.removeColumn(colModel.getColumn(columnModelIndex));
+
+				colModel.getColumn(columnModelIndex).setMinWidth(0);
+				colModel.getColumn(columnModelIndex).setMaxWidth(0);
+			}
+		}
+	}
+
+	private final class ItemRowListener implements ListSelectionListener {
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			if (!e.getValueIsAdjusting()) {
+				mainController.clearMessages();
+				if (getCurrentItemPaths().size() > 0) {
+					mainController.setFilesDownloadable(true);
+				} else {
+					mainController.setFilesDownloadable(false);
+				}
+				
+				if(folderIndexes.contains(table.getSelectedRow()) && table.getSelectedRowCount() == 1){
+					UpdateTable(currentFolder.getFolderAt(table.getSelectedRow()), mainController.getCurrentList(), false);
+				}
+			}
+		}
+	}
+
+	private final class ItemViewTable extends JTable {
+		private static final long serialVersionUID = -4122451180044627689L;
+
+		private ItemViewTable(Object[][] rowData, Object[] columnNames) {
+			super(rowData, columnNames);
+		}
+
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			return true;
+		}
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		public Class getColumnClass(int column)
+		{
+			if(getValueAt(0, column) != null){
+				return getValueAt(0, column).getClass();
+			}
+			else{
+				return this.getClass();
+			}
+		}
+	}
+
 	private static final String HIDDEN_COLUMNS_KEY = "Hidden Columns in Item View";
 
 	private static final long serialVersionUID = 9001415591452156169L;
@@ -35,10 +96,15 @@ public class SPItemView extends SPBaseView {
 	private static SPItemView instance = new SPItemView();
 
 	private JScrollPane scroll = new JScrollPane();
+	private JLabel locationLabel = new JLabel("");
 	private JLabel loadingImage;
 	private JLabel errorLabel = new JLabel("Connect to a site using the address bar above.");
 
 	private JTable table;
+	
+	private SPFolder currentFolder;
+
+	private List<Integer> folderIndexes;
 
 	/**
 	 * This returns the itemView's static instance
@@ -54,11 +120,12 @@ public class SPItemView extends SPBaseView {
 	 */
 	private SPItemView() {
 
-		prefs.registerNoteForKey(HIDDEN_COLUMNS_KEY, "Hide columns by holding Ctrl and double clicking on the headers of the item view table. Remove them here to unhide them.");
-		if(!prefs.keyExists(HIDDEN_COLUMNS_KEY)){
+		prefs.registerNoteForKey(HIDDEN_COLUMNS_KEY,
+				"Hide columns by holding Ctrl and double clicking on the headers of the item view table. Remove them here to unhide them.");
+		if (!prefs.keyExists(HIDDEN_COLUMNS_KEY)) {
 			prefs.add(HIDDEN_COLUMNS_KEY, "Example_Hidden_Column");
 		}
-		
+
 		this.add(scroll);
 		scroll.setBackground(SPUtilities.getLightThemeColor());
 		scroll.getViewport().setBackground(SPUtilities.getLightThemeColor());
@@ -66,7 +133,9 @@ public class SPItemView extends SPBaseView {
 		setBackground(SPUtilities.getLightThemeColor());
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
+		
 
+		
 		URL url = getClass().getResource("/715.GIF");
 		if (url != null) {
 			ImageIcon imageIcon = new ImageIcon(url);
@@ -76,23 +145,38 @@ public class SPItemView extends SPBaseView {
 		}
 		this.add(loadingImage);
 		this.add(errorLabel);
+		this.add(locationLabel);
 		loadingImage.setVisible(false);
 		errorLabel.setVisible(false);
+		locationLabel.setVisible(true);
+		
+		errorLabel.setForeground(SPUtilities.getLightThemeFontColor());
 
 		layout.putConstraint(SpringLayout.WEST, scroll, 0, SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, scroll, 0, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.EAST, scroll, 0, SpringLayout.EAST, this);
-		layout.putConstraint(SpringLayout.SOUTH, scroll, 0, SpringLayout.SOUTH, this);
+		layout.putConstraint(SpringLayout.SOUTH, scroll, 0, SpringLayout.NORTH, locationLabel);
+		
+		layout.putConstraint(SpringLayout.WEST, locationLabel, 0, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.NORTH, locationLabel, -20, SpringLayout.SOUTH, this);
+		layout.putConstraint(SpringLayout.EAST, locationLabel, 0, SpringLayout.EAST, this);
+		layout.putConstraint(SpringLayout.SOUTH, locationLabel, 0, SpringLayout.SOUTH, this);
 
 		layout.putConstraint(SpringLayout.WEST, loadingImage, 0, SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, loadingImage, 0, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.EAST, loadingImage, 0, SpringLayout.EAST, this);
-		layout.putConstraint(SpringLayout.SOUTH, loadingImage, 0, SpringLayout.SOUTH, this);
+		layout.putConstraint(SpringLayout.SOUTH, loadingImage, 0, SpringLayout.NORTH, locationLabel);
 
 		layout.putConstraint(SpringLayout.WEST, errorLabel, 0, SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, errorLabel, 0, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.EAST, errorLabel, 0, SpringLayout.EAST, this);
-		layout.putConstraint(SpringLayout.SOUTH, errorLabel, 0, SpringLayout.SOUTH, this);
+		layout.putConstraint(SpringLayout.SOUTH, errorLabel, 0, SpringLayout.NORTH, locationLabel);
+		
+
+		locationLabel.setBackground(SPUtilities.getDarkThemeColor());
+		locationLabel.setOpaque(true);
+		locationLabel.setForeground(SPUtilities.getDarkThemeFontColor());
+		locationLabel.setHorizontalAlignment(JLabel.CENTER);
 
 	}
 
@@ -145,91 +229,30 @@ public class SPItemView extends SPBaseView {
 	 *            - the new items to display.
 	 * @param listName
 	 *            - the list of the current items.
+	 * @param isRefresh 
 	 * @return true if the operation was successful.
 	 */
-	public boolean UpdateTable(List<Object> items, String listName) {
+	public boolean UpdateTable(SPFolder folder, String listName, boolean isRefresh) {
+		
+		if(folder == null){
+			return false;
+		}
+		
+		
+		if(isRefresh && currentFolder != null){
+			String previousFolderPath = currentFolder.folderPath;
+			folder = folder.getFolderByPath(previousFolderPath);
+		}
+		
+
+		currentFolder = folder;
 		mainController.setFilesDownloadable(false);
-		boolean returnResult = true;
-		String[] columnNames = null;
-		if (items != null) {
-			columnNames = webController.getAttributeNames(items);
-		}
-		Object[][] data = null;
-		if (columnNames != null) {
-			data = webController.getData(items, columnNames);
-		}
-
-		if (data != null && columnNames != null) {
-			table = new JTable(data, columnNames) {
-
-				private static final long serialVersionUID = -4122451180044627689L;
-
-				@Override
-				public boolean isCellEditable(int row, int column) {
-					return false;
-				}
-			};
-			List<String> columns = Arrays.asList(columnNames);
-			int indexOfName = columns.indexOf("FileName (FileLeafRef)");
-			if (indexOfName > -1) {
-				table.moveColumn(columns.indexOf("FileName (FileLeafRef)"), 0);
-				table.getColumnModel().getColumn(0).setMinWidth(150);
-			}
-			table.setBackground(Color.white);
-			table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					if (!e.getValueIsAdjusting()) {
-						mainController.clearMessages();
-						if (getCurrentItemPaths().size() > 0) {
-							mainController.setFilesDownloadable(true);
-						} else {
-							mainController.setFilesDownloadable(false);
-						}
-					}
-				}
-			});
-			table.getTableHeader().addMouseListener(new MouseAdapter() {
-
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() > 1 && e.isControlDown()) {
-						TableColumnModel colModel = table.getColumnModel();
-						int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
-						System.out.println(columnModelIndex + " - " + e.getSource());
-						prefs.add(HIDDEN_COLUMNS_KEY, colModel.getColumn(columnModelIndex).getHeaderValue().toString());
-						prefs.flush();
-						// colModel.removeColumn(colModel.getColumn(columnModelIndex));
-
-						colModel.getColumn(columnModelIndex).setMinWidth(0);
-						colModel.getColumn(columnModelIndex).setMaxWidth(0);
-					}
-				}
-			});
-
-			TableColumnModel colModel = table.getColumnModel();
-			for (int i = 0; i < table.getColumnCount(); i++) {
-
-				int columnModelIndex = i;
-				if (prefs.getAll(HIDDEN_COLUMNS_KEY).contains(colModel.getColumn(columnModelIndex).getHeaderValue().toString())) {
-					// colModel.removeColumn(colModel.getColumn(columnModelIndex));
-
-					colModel.getColumn(columnModelIndex).setMinWidth(0);
-					colModel.getColumn(columnModelIndex).setMaxWidth(0);
-				}
-			}
-			scroll.setViewportView(table);
-			errorLabel.setVisible(false);
-		} else {
-			System.err.println("Data didn't read.");
-			setErrorMessage("There are no items to view.");
-			returnResult = false;
-		}
+		
+		boolean returnResult = createNewTable(folder, listName, SharePointWebController.FILE_NAME_DISPLAY);
 		this.revalidate();
 		return returnResult;
 	}
-
+	
 	/**
 	 * This used to update the item display with new items.
 	 * 
@@ -242,111 +265,65 @@ public class SPItemView extends SPBaseView {
 	public boolean UpdateTableWithSearch(NodeList files) {
 		mainController.setFilesDownloadable(false);
 		boolean returnResult = true;
-		String[] columnNames = null;
-		if (files != null) {
-			NodeList firstFilesElements = files.item(0).getChildNodes();
-			int count = 0;
-			for (int i = 0; i < firstFilesElements.getLength(); i++) {
-				if (!firstFilesElements.item(i).getNodeName().contains("#text")) {
-					count++;
-				}
-			}
-			columnNames = new String[count];
-			count = 0;
-			for (int i = 0; i < firstFilesElements.getLength(); i++) {
-				if (!firstFilesElements.item(i).getNodeName().contains("#text")) {
-					columnNames[count++] = firstFilesElements.item(i).getNodeName();
-				}
-			}
-		}
+		
+		currentFolder = new SPFolder(files);
+		returnResult = createNewTable(currentFolder, "", SharePointWebController.FILE_SEARCH_NAME);
+		
+		this.revalidate();
+		return returnResult;
+	}
+	
 
-		Object[][] data = null;
-		if (columnNames != null) {
-			data = new Object[files.getLength()][columnNames.length];
+	public boolean createNewTable(SPFolder folder, String listName, String nameField) {
+		locationLabel.setText("Current Location: " + folder.folderPath);
+		boolean returnResult = true;
 
-			NodeList firstFilesElements = files.item(0).getChildNodes();
-			for (int i = 0; i < files.getLength(); i++) {
-				int count = 0;
-				for (int j = 0; j < firstFilesElements.getLength(); j++) {
+		String[] columnNames = folder.getColumnNames();
+		Object[][] data = folder.getData();
 
-					if (!files.item(i).getChildNodes().item(j).getNodeName().contains("#text")) {
-						data[i][count++] = files.item(i).getChildNodes().item(j).getTextContent();
-					}
-				}
-			}
-		}
+		if (data != null && data.length > 0 && columnNames != null && columnNames.length > 0) {
+			table = new ItemViewTable(data, columnNames);
 
-		if (data != null && columnNames != null) {
-			table = new JTable(data, columnNames) {
-
-				private static final long serialVersionUID = -4122451180044627689L;
-
-				@Override
-				public boolean isCellEditable(int row, int column) {
-					return false;
-				}
-			};
 			List<String> columns = Arrays.asList(columnNames);
-			int indexOfName = columns.indexOf("Name");
+			int indexOfName = columns.indexOf(nameField);
 			if (indexOfName > -1) {
-				table.moveColumn(indexOfName, 0);
+				table.moveColumn(columns.indexOf(nameField), 0);
 				table.getColumnModel().getColumn(0).setMinWidth(150);
 			}
+			int indexOfImage = columns.indexOf("Icon");
+			if (indexOfImage > -1) {
+				table.moveColumn(columns.indexOf("Icon"), 0);
+				table.getColumnModel().getColumn(0).setMaxWidth(20);
+			}
 			table.setBackground(Color.white);
-			table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					if (!e.getValueIsAdjusting()) {
-						mainController.clearMessages();
-						if (getCurrentItemPaths().size() > 0) {
-							mainController.setFilesDownloadable(true);
-						} else {
-							mainController.setFilesDownloadable(false);
-						}
-					}
-				}
-			});
-			scroll.setViewportView(table);
-			errorLabel.setVisible(false);
-
-			table.getTableHeader().addMouseListener(new MouseAdapter() {
-
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() > 1 && e.isControlDown()) {
-						TableColumnModel colModel = table.getColumnModel();
-						int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
-						System.out.println(columnModelIndex + " - " + e.getSource());
-						prefs.add(HIDDEN_COLUMNS_KEY, colModel.getColumn(columnModelIndex).getHeaderValue().toString());
-						// colModel.removeColumn(colModel.getColumn(columnModelIndex));
-
-						colModel.getColumn(columnModelIndex).setMinWidth(0);
-						colModel.getColumn(columnModelIndex).setMaxWidth(0);
-					}
-				}
-			});
 			
+			folderIndexes = folder.getIndexes(ItemType.Folder);
+			table.getSelectionModel().addListSelectionListener(new ItemRowListener());
+			table.getTableHeader().addMouseListener(new HeaderMouseListener());
 
 			TableColumnModel colModel = table.getColumnModel();
 			for (int i = 0; i < table.getColumnCount(); i++) {
 
 				int columnModelIndex = i;
-				if (prefs.getAll(HIDDEN_COLUMNS_KEY).contains(colModel.getColumn(columnModelIndex).getHeaderValue().toString())) {
+				if (prefs.getAll(HIDDEN_COLUMNS_KEY)
+						.contains(colModel.getColumn(columnModelIndex).getHeaderValue().toString())) {
 					// colModel.removeColumn(colModel.getColumn(columnModelIndex));
 
 					colModel.getColumn(columnModelIndex).setMinWidth(0);
 					colModel.getColumn(columnModelIndex).setMaxWidth(0);
 				}
 			}
+			
+			scroll.setViewportView(table);
+			errorLabel.setVisible(false);
 		} else {
-			System.err.println("Data didn't read.");
 			setErrorMessage("There are no items to view.");
 			returnResult = false;
 		}
-		this.revalidate();
 		return returnResult;
 	}
+
+	
 
 	/**
 	 * Sets the error message for the display
@@ -373,6 +350,7 @@ public class SPItemView extends SPBaseView {
 	private void displayLoading(boolean willDisplay) {
 		scroll.setVisible(!willDisplay);
 		loadingImage.setVisible(willDisplay);
+		if(willDisplay) locationLabel.setText("");
 		errorLabel.setVisible(false);
 		this.revalidate();
 	}
@@ -396,5 +374,22 @@ public class SPItemView extends SPBaseView {
 	 */
 	public void finishedLoadingItems() {
 		displayLoading(false);
+	}
+
+	public String getCurrentFolderPath() {
+		if(currentFolder != null){
+			String returnString = currentFolder.folderPath;
+			
+			if(returnString.contains("/")){
+				returnString = returnString.substring(returnString.indexOf("/"));
+			}
+			else{
+				returnString = "";
+			}
+			return returnString;
+		}
+		else{
+			return "";
+		}
 	}
 }

@@ -56,10 +56,12 @@ import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
  */
 public class SharePointWebController {
 
+	public static final String FILE_NAME_DISPLAY = "FileName (FileLeafRef)";
 	private static final String BASE_TYPE_ATTRIBUTE_NAME = "BaseType";
 	private static final String DEFAULT_VIEW_URL_ATTRIBUTE_NAME = "DefaultViewUrl";
 	private static final String TITLE_ATTRIBUTE_NAME = "Title";
 	private static final String LIST_ELEMENT_NAME = "List";
+	public static final String FILE_SEARCH_NAME = "Name";
 	private ListsSoap listsoapstub;
 	private CopySoap copysoapstub;
 	private String BasesharepointUrl = "";
@@ -330,11 +332,16 @@ public class SharePointWebController {
 		}
 	}
 
+	/**
+	 * Contacts the server for search results. Needs my documentwebservice.wsp solution active on the site.
+	 * @param name - the name to search for.
+	 * @return the document containing the search results.
+	 */
 	public Document getSearch(String name) {
 		try {
 
 			URL searchUrl = new URL(
-					BasesharepointUrl + "/_layouts/DocumentWebService/get_document.asmx/GetDocumentURLS?name=" + name);
+					BasesharepointUrl + "/_layouts/DocumentWebService/get_document.asmx/GetDocumentsWithName?name=" + name);
 			URLConnection conn = searchUrl.openConnection();
 			conn.setConnectTimeout(5000);
 			conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
@@ -510,7 +517,7 @@ public class SharePointWebController {
 					names = new String[attributes.getLength()];
 					for (int i = 0; i < attributes.getLength(); i++) {
 						names[i] = attributes.item(i).getNodeName().replace("ows", "").replace("_", "")
-								.replace("FileLeafRef", "FileName (FileLeafRef)");
+								.replace("FileLeafRef", FILE_NAME_DISPLAY);
 					}
 				}
 			}
@@ -541,7 +548,7 @@ public class SharePointWebController {
 					data[i] = new Object[columns.size()];
 					for (int j = 0; j < attributes.getLength() && j < columns.size(); j++) {
 						int indexOfAttribute = columns.indexOf(attributes.item(j).getNodeName().replace("ows", "")
-								.replace("_", "").replace("FileLeafRef", "FileName (FileLeafRef)"));
+								.replace("_", "").replace("FileLeafRef", FILE_NAME_DISPLAY));
 						if (indexOfAttribute != -1) {
 							data[i][indexOfAttribute] = attributes.item(j).getNodeValue().replaceFirst(".*;#", "");
 						}
@@ -571,5 +578,15 @@ public class SharePointWebController {
 			ex.printStackTrace();
 			return null;
 		}
+	}
+
+	/**
+	 * Returns the folder representing the list of items.
+	 * @param listName - the name of the list to download.
+	 * @return the folder that contains the downloaded info.
+	 * @throws Exception
+	 */
+	public SPFolder getFolder(String listName) throws Exception {
+		return new SPFolder(getAllListItems(listName), listName);
 	}
 }

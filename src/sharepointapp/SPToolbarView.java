@@ -42,7 +42,6 @@ public class SPToolbarView extends SPBaseView {
 	private JButton searchButton;
 	private JTextField search;
 	private JComboBox<String> urlSelection;
-	protected boolean messageLock;
 
 	/**
 	 * Returns the static instance of this class.
@@ -151,21 +150,36 @@ public class SPToolbarView extends SPBaseView {
 		layout.putConstraint(SpringLayout.NORTH, upload, 5, SpringLayout.SOUTH, urlSelection);
 		layout.putConstraint(SpringLayout.EAST, upload, -5, SpringLayout.WEST, download);
 		layout.putConstraint(SpringLayout.SOUTH, upload, -5, SpringLayout.SOUTH, this);
-
-		layout.putConstraint(SpringLayout.WEST, searchButton, -BUTTON_SIZE - 25, SpringLayout.WEST, upload);
+//
+//		layout.putConstraint(SpringLayout.WEST, searchButton, -BUTTON_SIZE - 25, SpringLayout.WEST, upload);
+//		layout.putConstraint(SpringLayout.NORTH, searchButton, 5, SpringLayout.SOUTH, urlSelection);
+//		layout.putConstraint(SpringLayout.EAST, searchButton, -25, SpringLayout.WEST, upload);
+//		layout.putConstraint(SpringLayout.SOUTH, searchButton, -5, SpringLayout.SOUTH, this);
+//
+//		layout.putConstraint(SpringLayout.WEST, search, -BUTTON_SIZE - 5, SpringLayout.WEST, searchButton);
+//		layout.putConstraint(SpringLayout.NORTH, search, 5, SpringLayout.SOUTH, urlSelection);
+//		layout.putConstraint(SpringLayout.EAST, search, 0, SpringLayout.WEST, searchButton);
+//		layout.putConstraint(SpringLayout.SOUTH, search, -5, SpringLayout.SOUTH, this);
+//
+//		layout.putConstraint(SpringLayout.WEST, message, 5, SpringLayout.WEST, this);
+//		layout.putConstraint(SpringLayout.NORTH, message, 5, SpringLayout.SOUTH, urlSelection);
+//		layout.putConstraint(SpringLayout.EAST, message, -5, SpringLayout.WEST, search);
+//		layout.putConstraint(SpringLayout.SOUTH, message, -5, SpringLayout.SOUTH, this);
+		
+		layout.putConstraint(SpringLayout.WEST, searchButton, 5, SpringLayout.EAST, search);
 		layout.putConstraint(SpringLayout.NORTH, searchButton, 5, SpringLayout.SOUTH, urlSelection);
-		layout.putConstraint(SpringLayout.EAST, searchButton, -25, SpringLayout.WEST, upload);
+		layout.putConstraint(SpringLayout.EAST, searchButton, BUTTON_SIZE + 5, SpringLayout.EAST, search);
 		layout.putConstraint(SpringLayout.SOUTH, searchButton, -5, SpringLayout.SOUTH, this);
 
-		layout.putConstraint(SpringLayout.WEST, search, -BUTTON_SIZE - 5, SpringLayout.WEST, searchButton);
-		layout.putConstraint(SpringLayout.NORTH, search, 5, SpringLayout.SOUTH, urlSelection);
-		layout.putConstraint(SpringLayout.EAST, search, 0, SpringLayout.WEST, searchButton);
-		layout.putConstraint(SpringLayout.SOUTH, search, -5, SpringLayout.SOUTH, this);
-
-		layout.putConstraint(SpringLayout.WEST, message, 5, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.WEST, message, 5, SpringLayout.EAST, searchButton);
 		layout.putConstraint(SpringLayout.NORTH, message, 5, SpringLayout.SOUTH, urlSelection);
-		layout.putConstraint(SpringLayout.EAST, message, -5, SpringLayout.WEST, search);
+		layout.putConstraint(SpringLayout.EAST, message, -5, SpringLayout.WEST, upload);
 		layout.putConstraint(SpringLayout.SOUTH, message, -5, SpringLayout.SOUTH, this);
+
+		layout.putConstraint(SpringLayout.WEST, search, 5, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.NORTH, search, 5, SpringLayout.SOUTH, urlSelection);
+		layout.putConstraint(SpringLayout.EAST, search, 195, SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.SOUTH, search, -5, SpringLayout.SOUTH, this);
 
 		urlSelection.addActionListener(new URLSelectionActionListener());
 
@@ -283,8 +297,9 @@ public class SPToolbarView extends SPBaseView {
 					e2.printStackTrace();
 				}
 				List<String> paths = mainController.getCurrentItemPaths();
-				message.setText("Downloading " + paths.size() + " " + getFileString(paths.size()) + "...");
-				messageLock = true;
+				//message.setText("Downloading " + paths.size() + " " + getFileString(paths.size()) + "...");
+				mainController.displayMessages("Downloading " + paths.size() + " " + getFileString(paths.size()) + "...", null, true);
+				mainController.messageLock = true;
 
 				final File downloadFolderFinal = downloadFolder;
 
@@ -303,9 +318,10 @@ public class SPToolbarView extends SPBaseView {
 								e1.printStackTrace();
 							}
 						}
-						messageLock = false;
-						setMessageText(getFileString(paths.size()) + " Downloaded: " + count + " / " + paths.size(),
-								count == paths.size());
+						mainController.messageLock = false;
+						//setMessageText(getFileString(paths.size()) + " Downloaded: " + count + " / " + paths.size(),
+						//		count == paths.size());
+						mainController.displayMessages(getFileString(paths.size()) + " Downloaded: " + count + " / " + paths.size(), null, count == paths.size());
 					};
 
 				}).start();
@@ -342,16 +358,19 @@ public class SPToolbarView extends SPBaseView {
 
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				final String listName = mainController.getCurrentList();
+				final String folderPath = mainController.getCurrentFolderPath();
 				final File[] files = fileUploadChooser.getSelectedFiles();
-				message.setText("Uploading " + files.length + " " + getFileString(files.length) + "...");
-				messageLock = true;
+				//message.setText("Uploading " + files.length + " " + getFileString(files.length) + "...");
+				mainController.displayMessages("Uploading " + files.length + " " + getFileString(files.length) + "...", null, true);
+				mainController.messageLock = true;
 
 				(new Thread() {
 					public void run() {
 						int count = 0;
 						for (File file : files) {
 							try {
-								String listPath = webController.getDefaultUrlForList(listName);
+								String listPath = webController.getDefaultUrlForList(listName) + folderPath;
+								System.out.println(listPath);
 								if (listPath != null && webController.uploadFile(file.getAbsolutePath(),
 										listPath + "/" + file.getName())) {
 									count++;
@@ -362,10 +381,11 @@ public class SPToolbarView extends SPBaseView {
 							}
 						}
 						mainController.setCurrentList(listName);
-						mainController.updateItems();
-						messageLock = false;
-						setMessageText(getFileString(files.length) + " Uploaded: " + count + " / " + files.length,
-								count == files.length);
+						mainController.updateItems(true);
+						mainController.messageLock = false;
+						//setMessageText(getFileString(files.length) + " Uploaded: " + count + " / " + files.length,
+						//		count == files.length);
+						mainController.displayMessages(getFileString(files.length) + " Uploaded: " + count + " / " + files.length, null, count == files.length);
 					};
 				}).start();
 			}
@@ -408,7 +428,7 @@ public class SPToolbarView extends SPBaseView {
 	 * Clears the messages associated with the view.
 	 */
 	public void clearMessageText() {
-		if (!messageLock) {
+		if (!mainController.messageLock) {
 			setMessageText("", true);
 		}
 	}
@@ -423,10 +443,10 @@ public class SPToolbarView extends SPBaseView {
 	 *            failure.
 	 */
 	public void setMessageText(String messageText, boolean isSuccessful) {
-		if (!messageLock) {
+		if (!mainController.messageLock) {
 			message.setText(messageText);
 			if (isSuccessful) {
-				message.setForeground(Color.black);
+				message.setForeground(SPUtilities.getDarkThemeFontColor());
 			} else {
 				message.setForeground(Color.red);
 			}
@@ -480,7 +500,7 @@ public class SPToolbarView extends SPBaseView {
 		enableRefreshButton(false);
 		upload.setEnabled(false);
 		searchButton.setEnabled(false);
-		clearMessageText();
+		mainController.clearMessages();
 		if (prefs.add(URL_LIST_KEY, url)) {
 			urlSelection.addItem(url);
 			// urlSelection.removeAllItems();

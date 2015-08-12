@@ -236,7 +236,7 @@ public class SharePointAuthenticator extends Authenticator {
 			}
 
 			MainView.frame.setEnabled(true);
-			MainView.frame.requestFocus();
+			//MainView.frame.requestFocus();
 			MainView.frame.revalidate();
 			MainView.frame.repaint();
 			if (!exited) {

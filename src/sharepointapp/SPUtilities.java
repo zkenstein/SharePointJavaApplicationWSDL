@@ -16,6 +16,8 @@ import javax.swing.JFrame;
 public class SPUtilities {
 	private static final String DEFAULT_DARK_THEME_COLOR = "Default Dark Theme Color";
 	private static final String DEFAULT_LIGHT_THEME_COLOR = "Default Light Theme Color";
+	private static final String DEFAULT_DARK_THEME_FONT_COLOR = "Default Dark Theme Font Color";
+	private static final String DEFAULT_LIGHT_THEME_FONT_COLOR = "Default Light Theme Font Color";
 	static SPPreferences prefs = SPPreferences.GetPreferences();
 
 	/**
@@ -52,6 +54,28 @@ public class SPUtilities {
 
 		Color defaultColor = new Color(240, 255, 242);
 		return handleColorGeneration(defaultColor, DEFAULT_LIGHT_THEME_COLOR);
+	}
+	
+	/**
+	 * Returns the font color for darker-theme components.
+	 * 
+	 * @return
+	 */
+	public static Color getDarkThemeFontColor() {
+
+		Color defaultColor = Color.WHITE;
+		return handleColorGeneration(defaultColor,  DEFAULT_DARK_THEME_FONT_COLOR);
+	}
+	
+	/**
+	 * Returns the font color for lighter-theme components.
+	 * 
+	 * @return
+	 */
+	public static Color getLightThemeFontColor() {
+
+		Color defaultColor = Color.BLACK;
+		return handleColorGeneration(defaultColor,  DEFAULT_LIGHT_THEME_FONT_COLOR);
 	}
 
 	public static Color handleColorGeneration(Color defaultColor, String prefsKey) {
