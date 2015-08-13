@@ -150,21 +150,6 @@ public class SPToolbarView extends SPBaseView {
 		layout.putConstraint(SpringLayout.NORTH, upload, 5, SpringLayout.SOUTH, urlSelection);
 		layout.putConstraint(SpringLayout.EAST, upload, -5, SpringLayout.WEST, download);
 		layout.putConstraint(SpringLayout.SOUTH, upload, -5, SpringLayout.SOUTH, this);
-//
-//		layout.putConstraint(SpringLayout.WEST, searchButton, -BUTTON_SIZE - 25, SpringLayout.WEST, upload);
-//		layout.putConstraint(SpringLayout.NORTH, searchButton, 5, SpringLayout.SOUTH, urlSelection);
-//		layout.putConstraint(SpringLayout.EAST, searchButton, -25, SpringLayout.WEST, upload);
-//		layout.putConstraint(SpringLayout.SOUTH, searchButton, -5, SpringLayout.SOUTH, this);
-//
-//		layout.putConstraint(SpringLayout.WEST, search, -BUTTON_SIZE - 5, SpringLayout.WEST, searchButton);
-//		layout.putConstraint(SpringLayout.NORTH, search, 5, SpringLayout.SOUTH, urlSelection);
-//		layout.putConstraint(SpringLayout.EAST, search, 0, SpringLayout.WEST, searchButton);
-//		layout.putConstraint(SpringLayout.SOUTH, search, -5, SpringLayout.SOUTH, this);
-//
-//		layout.putConstraint(SpringLayout.WEST, message, 5, SpringLayout.WEST, this);
-//		layout.putConstraint(SpringLayout.NORTH, message, 5, SpringLayout.SOUTH, urlSelection);
-//		layout.putConstraint(SpringLayout.EAST, message, -5, SpringLayout.WEST, search);
-//		layout.putConstraint(SpringLayout.SOUTH, message, -5, SpringLayout.SOUTH, this);
 		
 		layout.putConstraint(SpringLayout.WEST, searchButton, 5, SpringLayout.EAST, search);
 		layout.putConstraint(SpringLayout.NORTH, searchButton, 5, SpringLayout.SOUTH, urlSelection);

@@ -42,7 +42,7 @@ public class SPUtilities {
 	 */
 	public static Color getDarkThemeColor() {
 		Color defaultColor = new Color(132, 178, 139);
-		return handleColorGeneration(defaultColor, DEFAULT_DARK_THEME_COLOR);
+		return handleColorGenerationFromPreferences(defaultColor, DEFAULT_DARK_THEME_COLOR);
 	}
 
 	/**
@@ -53,7 +53,7 @@ public class SPUtilities {
 	public static Color getLightThemeColor() {
 
 		Color defaultColor = new Color(240, 255, 242);
-		return handleColorGeneration(defaultColor, DEFAULT_LIGHT_THEME_COLOR);
+		return handleColorGenerationFromPreferences(defaultColor, DEFAULT_LIGHT_THEME_COLOR);
 	}
 	
 	/**
@@ -64,7 +64,7 @@ public class SPUtilities {
 	public static Color getDarkThemeFontColor() {
 
 		Color defaultColor = Color.WHITE;
-		return handleColorGeneration(defaultColor,  DEFAULT_DARK_THEME_FONT_COLOR);
+		return handleColorGenerationFromPreferences(defaultColor,  DEFAULT_DARK_THEME_FONT_COLOR);
 	}
 	
 	/**
@@ -75,10 +75,16 @@ public class SPUtilities {
 	public static Color getLightThemeFontColor() {
 
 		Color defaultColor = Color.BLACK;
-		return handleColorGeneration(defaultColor,  DEFAULT_LIGHT_THEME_FONT_COLOR);
+		return handleColorGenerationFromPreferences(defaultColor,  DEFAULT_LIGHT_THEME_FONT_COLOR);
 	}
 
-	public static Color handleColorGeneration(Color defaultColor, String prefsKey) {
+	/**
+	 * Converts the prefs file value to a color, or returns the default if that fails.
+	 * @param defaultColor - the color to use if the system fails to find a user supplied one.
+	 * @param prefsKey - the 0xRRGGBB formatted string for the wanted color
+	 * @return the wanted or default color.
+	 */
+	public static Color handleColorGenerationFromPreferences(Color defaultColor, String prefsKey) {
 
 		String defaultColorHex = "0x" + Integer.toHexString(defaultColor.getRGB()).substring(2);
 		try {

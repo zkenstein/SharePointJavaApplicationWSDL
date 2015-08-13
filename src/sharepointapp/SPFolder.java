@@ -8,6 +8,11 @@ import org.w3c.dom.NodeList;
 
 import sharepointapp.SPItem.ItemType;
 
+/**
+ * This class is used to represent a collection of items. (e.g., a list or folder).
+ * @author allarj3
+ *
+ */
 public class SPFolder {
 	List<Object> items;
 	private String[] originalNames = null;
@@ -21,6 +26,11 @@ public class SPFolder {
 
 	SharePointWebController webController = SharePointWebController.getInstance();
 
+	/**
+	 * Creates a new SPFolder for a list collection.
+	 * @param allListItems - the items from a list.
+	 * @param folderPath - the path to the current list.
+	 */
 	public SPFolder(List<Object> allListItems, String folderPath) {
 		this.folderPath = folderPath;
 		items = new ArrayList<Object>(allListItems);
@@ -83,6 +93,10 @@ public class SPFolder {
 
 	}
 	
+	/**
+	 * Creates a new search folder, containing all of the items from a search result.
+	 * @param files - the list of files/items to add to the search folder.
+	 */
 	public SPFolder(NodeList files){
 		this.folderPath = "Search";
 		
@@ -133,16 +147,13 @@ public class SPFolder {
 		
 	}
 
-	private void addParentFolder(SPFolder folder) {
-		SPItem parentFolderItem = new SPItem();
-		parentFolderItem.fields.put(SharePointWebController.FILE_NAME_DISPLAY, "Parent Folder");
-		parentFolderItem.fields.put("FileRef", folder.folderPath);
-		parentFolderItem.folder = folder;
-		parentFolderItem.itemType = ItemType.Folder;
-		
-		spItems.add(parentFolderItem);
-	}
-
+	/**
+	 * Creates a folder containing items in SharePoint's folder item.
+	 * @param items - the items to add to the new folder.
+	 * @param names - the column names to add to the folder.
+	 * @param folderPath - the path to this folder.
+	 * @param root - the root folder.
+	 */
 	public SPFolder(List<SPItem> items, List<String> names, String folderPath, SPFolder root) {
 		this.spItems = items;
 		this.columnNames = names;
@@ -157,15 +168,38 @@ public class SPFolder {
 		
 		spItems.add(rootFolderItem);
 	}
+	
+	/**
+	 * Adds the parent folder item to a folder.
+	 * @param folder - the folder to add a parent for.
+	 */
+	private void addParentFolder(SPFolder folder) {
+		SPItem parentFolderItem = new SPItem();
+		parentFolderItem.fields.put(SharePointWebController.FILE_NAME_DISPLAY, "Parent Folder");
+		parentFolderItem.fields.put("FileRef", folder.folderPath);
+		parentFolderItem.folder = folder;
+		parentFolderItem.itemType = ItemType.Folder;
+		
+		spItems.add(parentFolderItem);
+	}
 
+	/**
+	 * @return Returns the list of items.
+	 */
 	public List<Object> getItems() {
 		return items;
 	}
 
+	/**
+	 * @return returns the array of column names.
+	 */
 	public String[] getColumnNames() {
 		return columnNames.toArray(new String[columnNames.size()]);
 	}
 
+	/**
+	 * @return returns the data 2d array of all the items.
+	 */
 	public Object[][] getData() {
 		// return data;
 
@@ -177,6 +211,10 @@ public class SPFolder {
 		return newData;
 	}
 
+	/**
+	 * @param type - the type of the items to look for.
+	 * @return the list of indexes of the rows in the 2d array containing this type of item.
+	 */
 	public List<Integer> getIndexes(ItemType type) {
 		List<Integer> indexes = new ArrayList<Integer>();
 		for (int i = 0; i < spItems.size(); i++) {
@@ -188,14 +226,23 @@ public class SPFolder {
 		return indexes;
 	}
 
+	/**
+	 * Returns the folder at the specific row.
+	 * @param rowIndex - the row to look at
+	 * @return the wanted folder.
+	 */
 	public SPFolder getFolderAt(int rowIndex) {
-		System.out.println(spItems.get(rowIndex).folder.folderPath);
 		return spItems.get(rowIndex).folder;
 	}
 
-	public SPFolder getFolderByPath(String previousFolderPath) {
+	/**
+	 * Will check a folder for the first subfolder that matches the folderpath.
+	 * @param wanterFolderPath - the path to look for.
+	 * @return the wanted folder.
+	 */
+	public SPFolder getFolderByPath(String wanterFolderPath) {
 		for(SPFolder folder: allFolders){
-			if(folder.folderPath.equals(previousFolderPath)){
+			if(folder.folderPath.equals(wanterFolderPath)){
 				return folder;
 			}
 		}
